@@ -329,7 +329,7 @@ export const Dashboard: React.FC = () => {
                     </div>`
                 ).join('') || '';
                 return `
-                    <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;">
+                    <div style="border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;page-break-inside:avoid;">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                             <div>
                                 <h4 style="margin:0;font-size:18px;">${label}</h4>
@@ -412,15 +412,17 @@ export const Dashboard: React.FC = () => {
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1e293b; max-width: 850px; margin: 0 auto; padding: 40px 32px; line-height: 1.6; }
         h1 { font-size: 28px; margin-bottom: 8px; }
-        h2 { font-size: 20px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
-        h3 { font-size: 16px; margin-bottom: 8px; }
+        h2 { font-size: 20px; margin-bottom: 12px; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; page-break-after: avoid; }
+        h3 { font-size: 16px; margin-bottom: 8px; page-break-after: avoid; }
         .badge { display: inline-block; padding: 4px 14px; border-radius: 99px; font-size: 13px; font-weight: 700; margin-right: 8px; margin-bottom: 8px; }
-        .section { margin-bottom: 32px; page-break-inside: avoid; }
+        .section { margin-bottom: 24px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+        .card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; page-break-inside: avoid; }
         @media print {
             body { padding: 20px 16px; }
-            .section { page-break-inside: avoid; }
+            h2, h3 { page-break-after: avoid; }
+            .card { page-break-inside: avoid; }
+            p, li { orphans: 3; widows: 3; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
