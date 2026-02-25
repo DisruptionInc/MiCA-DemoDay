@@ -618,7 +618,7 @@ Content Rules:
         setProgressText("");
     };
 
-    // --- API CALL 5: VIDEO AGENT PROMPT ---
+    // --- API CALL 5: VIDEO SCRIPT ---
     const generateVideoScript = async (campaignData: Campaign, strategy: any) => {
         const creatorName = campaignData.creator_name || 'Business Owner';
 
@@ -628,50 +628,36 @@ PRODUCT: ${campaignData.product_name}
 STRATEGY SUMMARY: ${strategy.strategy_summary}
 CHANNELS: ${campaignData.recommended_channels.join(', ')}
 
-Please write the detailed Video Agent prompt.`;
+Please write the video script based on the system instructions.`;
 
-        const systemPrompt = `You are an expert video director for AI marketing campaigns. Write a comprehensive prompt for the HeyGen Video Agent.
+        const systemPrompt = `You are MiCA's video scriptwriter. Write a 60-second video script for an AI avatar spokesperson to present a marketing campaign summary.
 
-The prompt must follow this EXACT structure:
+The avatar will be speaking directly to the business owner, presenting their campaign strategy in an encouraging, professional tone. The video will be in portrait (9:16) format.
 
-Create a [Duration]-second vertical (9:16) video with [Avatar Description]. Background: [Background Description].
-SCRIPT:
-[SCENE 1 - Opening (0-12 seconds)]
-Avatar speaks with [Emotion/Tone]:
-"[Script Line 1]"
-[Visual: Text overlay - "Key Point 1"]
-[SCENE 2 - The Strategy (12-35 seconds)]
-Avatar gestures [Action]:
-"[Script Line 2]"
-[Visual: Split screen showing [Details]]
-... and so on.
+Respond in valid JSON only.
 
-Requirements:
-1.  **Format**: Vertical (9:16) aspect ratio for mobile viewing.
-2.  **Avatar**: Professional Indian male or female (based on brand tone), 30-38 years, smart casual. Confident and approachable.
-3.  **Background**: Modern home studio or office, plants, soft lighting.
-4.  **Script Content & Tone**:
-    -   **Address the Creator**: Start with "Namaste ${creatorName}!" or "Hello ${creatorName}!"
-    -   **Context**: Acknowledge their specific product (${campaignData.product_name}) and the challenge of finding customers.
-    -   **The Solution**: Present this campaign/strategy as the solution MiCA has built FOR THEM.
-    -   **The Strategy**: Explain the specific channels (Emails, WhatsApp, etc.) as tools working to grow their business.
-    -   **Closing**: End with a motivating line about launching their success.
-    -   **Style**: Speak like a knowledgeable marketing consultant talking to a client. Encouraging, professional, warm.
-5.  **Duration**: Approx 60-75 seconds.
-
-Return ONLY valid JSON in this format:
+Response format:
 {
-  "video_agent_prompt": "The entire formatted text block as described above, including the 'Create a...' header and 'SCRIPT:' sections. NOT just the spoken words."
-}`;
+  "video_agent_prompt": "The complete spoken script. Write in natural, conversational spoken English. NOT formal report language. Include natural pauses indicated by '...' where appropriate. Must be 120-150 words (60 seconds at normal speaking pace). Address the business owner by their name (${creatorName})."
+}
+
+Rules:
+- Start with a warm, personal greeting using the creator's name (e.g. "Namaste ${creatorName}!" or "Hello ${creatorName}!")
+- Mention their product (${campaignData.product_name}) specifically
+- Briefly describe the campaign approach (1-2 sentences)
+- Highlight the 3 most important tactics across the campaign
+- Mention the channels being used
+- End with an encouraging, motivational closing
+- Keep it under 150 words (CRITICAL — longer scripts = longer/expensive videos)
+- Speak naturally — contractions, simple words, like a friendly marketing consultant
+- Reference Indian context naturally if the product is India-focused
+- Do NOT use any visual directions or camera cues — this is audio/speech only`;
 
         const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7 });
 
         let scriptJson;
         try {
             const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
-            // Attempt to clean control characters that might break JSON (newlines inside strings)
-            // This is a simple heuristic: replace literal newlines with \n if they seem to be in a string.
-            // Actually, simplest is to just rely on the AI, but if it fails, try a relaxed parse or just fail gracefully.
             scriptJson = JSON.parse(cleanResponse);
         } catch (e) {
             console.error("JSON Parse Error in Video Script:", e);
@@ -680,8 +666,6 @@ Return ONLY valid JSON in this format:
             scriptJson = { video_agent_prompt: response.replace(/```json\n?|\n?```/g, '').trim() };
         }
 
-        // We store the full prompt in video_script column for now, or we might need a new column. 
-        // For now, using 'video_script' column to store the Prompt is acceptable as it's a text field.
         await supabase.from('campaigns').update({ video_script: scriptJson.video_agent_prompt }).eq('id', campaignData.id);
         return scriptJson.video_agent_prompt;
     };
