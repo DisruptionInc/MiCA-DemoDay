@@ -37,12 +37,17 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
         setIsLaunching(true);
         setError(null);
         try {
-            await generateExecutionSchedule(campaignId);
-            await triggerWebhook('campaign_launched', {
-                campaign_id: campaignId,
-                action: 'campaign_launched',
-                start_date: new Date().toISOString()
-            });
+            if (campaignId.startsWith('demo-')) {
+                // Simulate launch latency
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            } else {
+                await generateExecutionSchedule(campaignId);
+                await triggerWebhook('campaign_launched', {
+                    campaign_id: campaignId,
+                    action: 'campaign_launched',
+                    start_date: new Date().toISOString()
+                });
+            }
             onLaunchComplete();
             setShowConfirm(false);
         } catch (err: any) {
@@ -148,8 +153,8 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
                 {/* CSV Upload Dropzone */}
                 <div
                     className={`max-w-lg mx-auto border-2 border-dashed rounded-xl p-8 transition-all duration-300 cursor-pointer ${isDragging
-                            ? 'border-amber-400 bg-amber-500/10'
-                            : 'border-gray-600 hover:border-amber-500/50 bg-black/20'
+                        ? 'border-amber-400 bg-amber-500/10'
+                        : 'border-gray-600 hover:border-amber-500/50 bg-black/20'
                         }`}
                     onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                     onDragLeave={() => setIsDragging(false)}

@@ -515,7 +515,7 @@ export const Dashboard: React.FC = () => {
                                 {plan.campaign_duration_days || 28} Day Campaign
                             </span>
                             <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
-                                â‚¹{campaign.budget.toLocaleString('en-IN')} Budget
+                                ₹{campaign.budget.toLocaleString('en-IN')} Budget
                             </span>
                         </div>
                         <h2 className="text-4xl font-bold text-white mb-3">{plan.campaign_name || campaign.product_name}</h2>
@@ -534,7 +534,7 @@ export const Dashboard: React.FC = () => {
                         <div>
                             <h4 className="text-amber-300 font-bold text-base mb-1">Customer Data Required</h4>
                             <p className="text-amber-100/80 text-base leading-relaxed">{plan.no_contact_data_notice}</p>
-                            <p className="text-amber-200/60 text-sm mt-2">Your entire campaign is ready â€” emails written, WhatsApp messages crafted, Instagram posts designed. Upload a CSV with customer contacts to activate delivery.</p>
+                            <p className="text-amber-200/60 text-sm mt-2">Your entire campaign is ready — emails written, WhatsApp messages crafted, Instagram posts designed. Upload a CSV with customer contacts to activate delivery.</p>
                         </div>
                     </div>
                 )}
@@ -555,7 +555,7 @@ export const Dashboard: React.FC = () => {
                                 <div className="space-y-2.5">
                                     {persona.pain_points.map((point: string, i: number) => (
                                         <div key={i} className="flex items-start gap-2.5">
-                                            <span className="text-red-400 mt-0.5 flex-shrink-0 text-lg">â€¢</span>
+                                            <span className="text-red-400 mt-0.5 flex-shrink-0 text-lg">•</span>
                                             <span className="text-gray-200 text-base">{point}</span>
                                         </div>
                                     ))}
@@ -569,7 +569,7 @@ export const Dashboard: React.FC = () => {
                                 <div className="space-y-2.5">
                                     {persona.motivations.map((motive: string, i: number) => (
                                         <div key={i} className="flex items-start gap-2.5">
-                                            <span className="text-emerald-400 mt-0.5 flex-shrink-0 text-lg">â€¢</span>
+                                            <span className="text-emerald-400 mt-0.5 flex-shrink-0 text-lg">•</span>
                                             <span className="text-gray-200 text-base">{motive}</span>
                                         </div>
                                     ))}
@@ -637,7 +637,7 @@ export const Dashboard: React.FC = () => {
                                         {channelPlan.email.stages.map((stage: any, i: number) => (
                                             <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
                                                 <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-blue-500/30 text-blue-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}â€“{stage.day_range?.[1]}</span>
+                                                    <span className="bg-blue-500/30 text-blue-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
                                                     <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
                                                 </div>
                                                 <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
@@ -670,7 +670,7 @@ export const Dashboard: React.FC = () => {
                                         {channelPlan.whatsapp.stages.map((stage: any, i: number) => (
                                             <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
                                                 <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-green-500/30 text-green-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}â€“{stage.day_range?.[1]}</span>
+                                                    <span className="bg-green-500/30 text-green-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
                                                     <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
                                                 </div>
                                                 <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
@@ -715,7 +715,7 @@ export const Dashboard: React.FC = () => {
                                         {channelPlan.instagram.stages.map((stage: any, i: number) => (
                                             <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
                                                 <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-pink-500/30 text-pink-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}â€“{stage.day_range?.[1]}</span>
+                                                    <span className="bg-pink-500/30 text-pink-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
                                                     <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
                                                 </div>
                                                 <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
@@ -741,7 +741,7 @@ export const Dashboard: React.FC = () => {
                                 <div key={i}>
                                     <div className="flex justify-between text-base mb-1.5">
                                         <span className="text-gray-200 capitalize font-medium">{entry.channel.replace('_', ' ')}</span>
-                                        <span className="text-white font-bold">â‚¹{entry.amount.toLocaleString('en-IN')}</span>
+                                        <span className="text-white font-bold">₹{entry.amount.toLocaleString('en-IN')}</span>
                                     </div>
                                     <div className="w-full bg-gray-800 rounded-full h-2.5">
                                         <div
@@ -759,7 +759,7 @@ export const Dashboard: React.FC = () => {
                         <div className="mt-4 pt-4 border-t border-gray-700">
                             <div className="flex justify-between">
                                 <span className="text-gray-200 text-base font-semibold">Total</span>
-                                <span className="text-white font-bold text-lg">â‚¹{(budget.total || campaign.budget).toLocaleString('en-IN')}</span>
+                                <span className="text-white font-bold text-lg">₹{(budget.total || campaign.budget).toLocaleString('en-IN')}</span>
                             </div>
                         </div>
                     </div>
