@@ -10,7 +10,7 @@ export const DEMO_CAMPAIGN = {
     product_description: "The Art of Living Happiness Programme is a 3-day experiential workshop that teaches practical tools to manage stress, calm the mind, and live with more energy and joy. Through a blend of yoga, powerful breathing techniques (including Sudarshan Kriya), guided meditation, and simple life wisdom, participants learn how to handle everyday challenges with greater ease and positivity. Key benefits include significant reduction in stress, increased daily energy levels, improved sleep, greater emotional resilience, and stronger relationships.",
     target_audience: "Working professionals, students, and homemakers experiencing daily stress, anxiety, or low energy, who are looking for practical, proven techniques to improve their mental well-being and overall quality of life.",
     launch_date: "2026-04-15",
-    budget: 50000,
+    budget: 6000,
     location: "Global - Online & In-person centers",
     tone: "Warm & Inspirational",
     tone_custom_words: "",
@@ -119,13 +119,13 @@ export const DEMO_CAMPAIGN = {
 
         budget_allocation: {
             breakdown: {
-                email: { amount: 5000, purpose: "Platform costs and custom template design" },
-                whatsapp: { amount: 10000, purpose: "Business API costs and dedicated support agent" },
-                instagram: { amount: 25000, purpose: "High-quality video production and targeted ad spend" },
-                video_ad: { amount: 10000, purpose: "Production of the main campaign explainer video" }
+                email: { amount: 800, purpose: "Platform costs and basic template design" },
+                whatsapp: { amount: 1200, purpose: "Business API costs for outreach" },
+                instagram: { amount: 3000, purpose: "Targeted ad spend and organic content boosting" },
+                video_ad: { amount: 1000, purpose: "Production of the main campaign explainer video" }
             },
-            total: 50000,
-            rationale: "The majority of the budget is allocated to Instagram for visual ad spend to reach new audiences, followed by WhatsApp for high-touch conversion. Email is highly cost-effective for the existing list."
+            total: 6000,
+            rationale: "Budget is optimized for maximum reach at minimal cost. Instagram receives the largest share for targeted reach, WhatsApp enables personal conversion, and email remains highly cost-effective for the existing contact list."
         },
 
         expected_outcomes: {
@@ -138,7 +138,7 @@ export const DEMO_CAMPAIGN = {
             success_criteria: "A minimum of 100 paid registrations across the available workshop dates, achieving an ROI of at least 3x the campaign budget."
         },
 
-        executive_summary: "The 'Breathe Joy' campaign is a multi-channel strategy aimed at increasing enrollments for the Art of Living Happiness Programme. By leveraging relatable pain points around stress and sleep, we introduce Sudarshan Kriya as a practical, scientifically-backed solution. The campaign utilizes Instagram for broad reach and visual storytelling, Email for deep education and scientific validation, and WhatsApp for intimate, conversational conversion. With a 50,000 budget, the goal is 100+ new registrations.",
+        executive_summary: "The 'Breathe Joy' campaign is a multi-channel strategy aimed at increasing enrollments for the Art of Living Happiness Programme. By leveraging relatable pain points around stress and sleep, we introduce Sudarshan Kriya as a practical, scientifically-backed solution. The campaign utilizes Instagram for broad reach and visual storytelling, Email for deep education and scientific validation, and WhatsApp for intimate, conversational conversion. With a 6,000 budget, the goal is 100+ new registrations.",
         key_metrics: { total_touchpoints: 23, email_count: 5, whatsapp_count: 8, social_post_count: 10, campaign_duration_days: 28, estimated_reach: "50,000+" },
         recommendations: [
             "Host a free 45-minute online 'Breath & Meditation' intro session mid-campaign",
@@ -225,7 +225,7 @@ export const DEMO_CAMPAIGN = {
     // Video
     video_url: "https://dynamic.heygen.ai/aws_pacific/avatar_tmp/1438b17eeed545b981fec8863f8d729d/v5848aa759798480c82ced7c4de123d30/820d52f6f343458792ddf22cfc4ed77e.mp4",
     video_status: "ready",
-    video_script: "Hi there! I'm so excited to share the 'Breathe Joy' campaign strategy with you for the Happiness Programme. Over the next 4 weeks, we're going to take your audience on a journey from feeling overwhelmed to empowered, using email, WhatsApp, and Instagram. In Week 1, we build awareness by validating their daily stress. Week 2, we establish immense trust by explaining the hard science behind Sudarshan Kriya and sharing profound transformation stories. Week 3 creates urgency around upcoming workshop dates. And in Week 4, we drive the final conversions with highly personalized follow-ups. Your 512 contacts will receive 23 personalized touchpoints. Given the 50,000 budget, our goal is to secure over 100 paid registrations. The strategy is solid, the message is powerful. Let's make this happen!",
+    video_script: "Hi there! I'm so excited to share the 'Breathe Joy' campaign strategy with you for the Happiness Programme. Over the next 4 weeks, we're going to take your audience on a journey from feeling overwhelmed to empowered, using email, WhatsApp, and Instagram. In Week 1, we build awareness by validating their daily stress. Week 2, we establish immense trust by explaining the hard science behind Sudarshan Kriya and sharing profound transformation stories. Week 3 creates urgency around upcoming workshop dates. And in Week 4, we drive the final conversions with highly personalized follow-ups. Your 512 contacts will receive 23 personalized touchpoints. Given the 6,000 budget, our goal is to secure over 100 paid registrations. The strategy is solid, the message is powerful. Let's make this happen!",
 
     // Execution Schedule 
     execution_schedule: [
