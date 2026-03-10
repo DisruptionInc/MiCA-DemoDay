@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add src/components/Dashboard/LaunchSection.tsx src/data/demoData.ts src/pages/Campaign/Dashboard.tsx)",
+      "Bash(git commit:*)",
+      "Bash(git push origin main)",
+      "Bash(git remote set-url origin https://github.com/DisruptionInc/MiCA-DemoDay.git)",
+      "Bash(git fetch origin)",
+      "Bash(git show 507f650 --no-stat -p)"
+    ]
+  }
+}
