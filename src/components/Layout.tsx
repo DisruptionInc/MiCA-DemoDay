@@ -8,9 +8,10 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
-        <div className="min-h-screen flex flex-col bg-gray-950 text-white font-sans">
+        <div className="min-h-screen flex flex-col text-white font-sans relative">
+            <div className="bg-smoke-layer" />
             <Navbar />
-            <main className="flex-grow pt-16">
+            <main className="flex-grow pt-16 relative z-10">
                 {children}
             </main>
             <Footer />

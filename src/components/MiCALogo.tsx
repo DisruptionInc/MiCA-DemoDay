@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import EyeCharacter from './EyeCharacter';
 
 /**
  * MiCA Logo — bold text where individual letters randomly expand 
@@ -50,24 +51,37 @@ export default function MiCALogo() {
   return (
     <div className="flex items-baseline gap-0 select-none" style={{ fontFamily: "'Inter', sans-serif" }}>
       {LETTERS.map((letter, i) => (
-        <span key={i} className="inline-flex items-baseline overflow-hidden">
+        <span key={i} className="inline-flex items-baseline relative">
           {/* The bold letter */}
           <span
-            className="font-black text-[#FF6600]"
+            className="font-black text-[#FF7A00] text-glow relative inline-block"
             style={{
-              fontSize: 'clamp(56px, 6vw, 80px)',
+              fontSize: 'clamp(90px, 11vw, 140px)', /* Greatly increased */
               lineHeight: 1,
-              ...(letter.isLowercase ? { fontSize: 'clamp(44px, 5vw, 64px)' } : {}),
+              ...(letter.isLowercase ? { fontSize: 'clamp(70px, 8vw, 110px)' } : {}),
             }}
           >
-            {letter.char}
+            {letter.char === 'i' ? (
+              <>
+                {/* Dotless 'i' */}
+                <span className="relative z-10">ı</span>
+                {/* Custom Eyeball Dot */}
+                <div className="absolute top-[0.08em] left-[52%] -translate-x-1/2 flex items-center justify-center z-20 pointer-events-auto" style={{ width: '0.25em', height: '0.25em' }}>
+                  <div className="scale-[0.3] md:scale-[0.4] lg:scale-[0.45] origin-center">
+                    <EyeCharacter size={90} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              letter.char
+            )}
           </span>
 
           {/* The expanding full word */}
           <AnimatePresence>
             {expandedIdx === i && (
               <motion.span
-                className="font-light text-[#FF6600]/70 whitespace-nowrap"
+                className="font-light text-[#FF7A00]/70 whitespace-nowrap overflow-hidden"
                 style={{
                   fontSize: 'clamp(28px, 3vw, 42px)',
                   lineHeight: 1,

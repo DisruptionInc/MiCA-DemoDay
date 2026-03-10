@@ -21,10 +21,56 @@ body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Premium Hover Effects */
+.accent-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.accent-bar::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--color-accent, #F59E0B);
+  /* Using gold/orange as accent */
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px var(--color-accent, #F59E0B);
+}
+
+.accent-bar:hover::before {
+  transform: scaleY(1);
+  transform-origin: top;
+}
+
+.card-lift {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(245, 158, 11, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
+  /* Slight glassmorphism lightening */
+  border-color: rgba(245, 158, 11, 0.3);
 }

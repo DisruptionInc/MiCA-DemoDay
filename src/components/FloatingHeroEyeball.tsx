@@ -16,9 +16,9 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
   // Is it currently chasing the mouse?
   const isChasingRef = useRef(false);
 
-  // Snappy, enthusiastic spring physics for the entire eyeball's movement across screen
-  const springX = useSpring(targetPos.x, { stiffness: 180, damping: 22 });
-  const springY = useSpring(targetPos.y, { stiffness: 180, damping: 22 });
+  // Smoother, floaty ease-in/ease-out spring physics
+  const springX = useSpring(targetPos.x, { stiffness: 40, damping: 20, mass: 1.5 });
+  const springY = useSpring(targetPos.y, { stiffness: 40, damping: 20, mass: 1.5 });
 
   useEffect(() => {
     springX.set(targetPos.x);
@@ -31,7 +31,7 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
 
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
-      mouseY = e.clientY;
+      mouseY = Math.max(90, e.clientY); // Don't chase cursor under the header
       if (isChasingRef.current) {
         setTargetPos({ x: mouseX, y: mouseY });
       }
@@ -66,14 +66,14 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
 
         // Calculate a snappy position around the element
         const destX = rect.left + (Math.random() * rect.width);
-        const destY = goTop ? Math.max(50, rect.top - 70) : Math.min(window.innerHeight - 50, rect.bottom + 70);
+        const destY = goTop ? Math.max(90, rect.top - 70) : Math.min(window.innerHeight - 50, rect.bottom + 70);
 
         setTargetPos({ x: destX, y: destY });
       } else {
         // 10% chance to just wander somewhere random but safe
         setTargetPos({
           x: 100 + Math.random() * (window.innerWidth - 200),
-          y: 100 + Math.random() * (window.innerHeight - 200)
+          y: 90 + Math.random() * (window.innerHeight - 190)
         });
       }
     };

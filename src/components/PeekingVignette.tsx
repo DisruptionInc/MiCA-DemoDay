@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './PeekingVignette.css';
 
 // Iris color palette — primary oranges mixed with desaturated yellows, greens, and blues
 const IRIS_COLORS = [
-  '#FF6600', '#E85200', '#FA5F00', // core oranges
+  '#FF7A00', '#E85200', '#FA5F00', // core oranges
   '#d66a28', '#c97842',           // desaturated earthy oranges
   '#c5a13c', '#d5af4a',           // desaturated mustard yellows
   '#5c824c', '#719c5c',           // desaturated forest greens
@@ -41,10 +41,10 @@ function PeekingEye({ x, y, startX, startY, size, delay, irisColor, gazeX, gazeY
     <motion.div
       className="peeking-eye"
       style={{ position: 'fixed', left: x - size / 2, top: y - size / 2, width: size, height: size }}
-      initial={{ x: offX, y: offY, opacity: 0, scale: 0.4 }}
-      animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+      initial={{ x: offX, y: offY }}
+      animate={{ x: 0, y: 0 }}
       exit={{
-        x: offX, y: offY, opacity: 0, scale: 0.3,
+        x: offX, y: offY,
         transition: { duration: 0.4, ease: 'easeIn', delay: delay / 2000 }
       }}
       transition={{ delay: delay / 1000, duration: 0.6, ease: 'backOut' }}
@@ -110,12 +110,12 @@ function generateVignette(maxPeekDepth: number): EyeData[] {
 
       if (distBottom < bottomPeekDepth) {
         // Bottom band - bounds itself create the U-shape physical layout
-        prob = 0.90 * (1 - (distBottom / bottomPeekDepth) * 0.4); // High density near edge, tapers inward
+        prob = 0.40 * (1 - (distBottom / bottomPeekDepth) * 0.4); // High density near edge, tapers inward
         startY = H + Math.random() * 50 + 40; // Enter from bottom
         delayBase = 0;
       } else if (distSide < sidePeekDepth) {
         // Side bands - bounds themselves taper cleanly towards the top
-        prob = 0.85 * (1 - (distSide / sidePeekDepth) * 0.5);
+        prob = 0.35 * (1 - (distSide / sidePeekDepth) * 0.5);
         startX = distLeft < distRight ? -(Math.random() * 50 + 40) : W + Math.random() * 50 + 40; // Enter from side
         delayBase = 150 + Math.random() * 200 + (1 - distFromTopNormY) * 300;
       } else if (cellY < maxPeekDepth * 0.25) {
@@ -155,12 +155,35 @@ interface Props {
 }
 
 export default function PeekingVignette({ visible, gazeX, gazeY }: Props) {
-  // Pass 140 (px) as max peek depth (corners). 
-  const eyes = useMemo(() => generateVignette(140), []);
+  const [eyes, setEyes] = useState<EyeData[]>([]);
+
+  useEffect(() => {
+    if (visible) {
+      setEyes(generateVignette(140));
+    } else {
+      setEyes([]);
+    }
+  }, [visible]);
+
+  // Force random vignette appearances occasionally
+  useEffect(() => {
+    const randomTrigger = () => {
+      setEyes(prev => {
+        if (prev.length === 0) {
+          setTimeout(() => setEyes([]), 2500);
+          return generateVignette(140);
+        }
+        return prev;
+      });
+      setTimeout(randomTrigger, 30000 + Math.random() * 20000); // 30-50s
+    };
+    const t = setTimeout(randomTrigger, 20000); // First delay 20s
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <AnimatePresence>
-      {visible && eyes.map((eye, i) => (
+      {eyes.map((eye: EyeData, i: number) => (
         <PeekingEye key={i} {...eye} gazeX={gazeX} gazeY={gazeY} />
       ))}
     </AnimatePresence>

@@ -6,7 +6,7 @@ import { motion, useSpring } from 'framer-motion';
  * They are purely decorative — very small, low opacity, and behind z-index 1.
  */
 
-const IRIS_COLORS = ['#FF6600', '#d66a28', '#c5a13c', '#5c824c', '#4a5c78'];
+const IRIS_COLORS = ['#FF7A00', '#d66a28', '#c5a13c', '#5c824c', '#4a5c78'];
 
 interface AmbientEye {
   id: number;

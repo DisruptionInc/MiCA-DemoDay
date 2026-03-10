@@ -40,7 +40,7 @@
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.3em;
-    color: #FF6600;
+    color: #FF7A00;
     text-transform: uppercase;
     margin-bottom: 14px;
     opacity: 0.9;
@@ -64,7 +64,7 @@
 
 /* Orange word â€” no gradient per user request */
 .accent {
-    color: #FF6600;
+    color: #FF7A00;
 }
 
 .hero-sub {
@@ -82,7 +82,7 @@
 
 .btn-primary {
     padding: 13px 30px;
-    background: linear-gradient(135deg, #FF6600, #FF4400);
+    background: linear-gradient(135deg, #FF7A00, #FF4400);
     color: white;
     font-size: 15px;
     font-weight: 700;
@@ -127,4 +127,58 @@
     z-index: 50;
     pointer-events: all;
     padding: 12px;
+}
+
+/* ── Animated Smoke Background ── */
+.bg-smoke-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -20;
+    background: radial-gradient(ellipse 90% 70% at 50% 50%, #1f2f52 0%, #162240 60%, #030712 100%);
+    pointer-events: none;
+}
+
+.bg-smoke-layer::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    z-index: -10;
+    opacity: 0.15;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.005' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    animation: drift 60s linear infinite;
+}
+
+@keyframes drift {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(10%, 10%);
+    }
+}
+
+/* ── Vigorous Shake for Peeking Eyeballs ── */
+@keyframes vigorous-shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    20% {
+        transform: translate(-3px, 2px) rotate(-3deg);
+    }
+
+    40% {
+        transform: translate(3px, -2px) rotate(2deg);
+    }
+
+    60% {
+        transform: translate(-2px, -3px) rotate(-2deg);
+    }
+
+    80% {
+        transform: translate(2px, 3px) rotate(3deg);
+    }
 }
