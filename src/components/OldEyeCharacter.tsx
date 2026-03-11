@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useSpring, AnimatePresence, useAnimation } from 'framer-motion';
-import './EyeCharacter.css';
+import './OldEyeCharacter.css';
 
 const SMILE_VARIANTS = [
   { d: 'M 8 4 Q 50 36 92 4' },
@@ -26,10 +26,9 @@ function scale(baseline: number, value: number) {
 interface EyeCharacterProps {
   size?: number; // default 108 — change freely without breaking internals
   onGiggle?: () => void;
-  version?: 'modern' | 'classic';
 }
 
-export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' }: EyeCharacterProps) {
+export default function OldEyeCharacter({ size = 108, onGiggle }: EyeCharacterProps) {
 
   // Derived measurements — all proportional to `size`
   const irisSize = scale(size, 110);
@@ -178,16 +177,7 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
         style={{ cursor: 'pointer' }}
       >
         {/* ── Sclera ──────────────────────────────────────────────── */}
-        <div className={`sclera ${version}`} style={{ width: size, height: size }}>
-
-          {version === 'modern' && (
-            <div className="glass-reflection" style={{
-              width: size * 0.8,
-              height: size * 0.4,
-              top: '5%',
-              left: '10%'
-            }} />
-          )}
+        <div className="sclera" style={{ width: size, height: size }}>
 
           {/* ── Iris anchor — % positions so they always stay proportional */}
           <div className="face-anchor">
@@ -204,9 +194,9 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
               }}
               transition={{ duration: isGiggling ? 0.05 : 0.1, ease: 'easeInOut' }}
             >
-              <div className={`iris ${version}`} style={{ width: irisSize, height: irisSize }}>
+              <div className="iris" style={{ width: irisSize, height: irisSize }}>
                 <motion.div
-                  className={`pupil ${version}`}
+                  className="pupil"
                   style={{ x: pupilX, y: pupilY, width: pupilSize, height: pupilSize }}
                 >
                   {/* Catchlights — positioned proportionally */}
@@ -216,16 +206,6 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
                     top: scale(size, 8),
                     left: scale(size, 9),
                   }} />
-                  {version === 'modern' && (
-                    <div className="catchlight catchlight-center" style={{
-                      width: scale(size, 4),
-                      height: scale(size, 4),
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      opacity: 0.3
-                    }} />
-                  )}
                   <div className="catchlight catchlight-secondary" style={{
                     width: scale(size, 6),
                     height: scale(size, 6),
@@ -233,7 +213,6 @@ export default function EyeCharacter({ size = 108, onGiggle, version = 'modern' 
                     left: scale(size, 28),
                   }} />
                 </motion.div>
-                {version === 'modern' && <div className="iris-overlay" />}
               </div>
             </motion.div>
           </div>

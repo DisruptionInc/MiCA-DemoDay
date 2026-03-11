@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Rocket, AlertTriangle, Upload, FileText, CheckCircle2 } from 'lucide-react';
+import { Rocket, AlertTriangle, Upload, CheckCircle2 } from 'lucide-react';
 import Papa from 'papaparse';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
@@ -204,10 +204,11 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
                 </p>
                 <div className="flex justify-center">
                     <Button
+                        variant="custom"
                         onClick={() => { setUploadSuccess(false); }}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transform hover:scale-[1.05] transition-all duration-300 font-bold flex items-center gap-3"
+                        className="bg-[#FF7A00] hover:bg-[#FF8800] text-white px-10 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(255,122,0,0.4)] hover:shadow-[0_0_30px_rgba(255,122,0,0.6)] transform hover:scale-[1.05] transition-all duration-300 font-bold flex items-center gap-3 border border-[#FF7A00]"
                     >
-                        <Rocket className="w-5 h-5" /> LAUNCH CAMPAIGN NOW
+                        <Rocket className="w-5 h-5 text-white" /> LAUNCH CAMPAIGN NOW
                     </Button>
                 </div>
             </div>
@@ -217,50 +218,40 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     // ── READY STATE: Normal launch prompt ──
     if (!showConfirm) {
         return (
-            <div className="bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border border-indigo-500/30 rounded-xl p-8 mb-8 text-center relative overflow-hidden group">
-                <div className="absolute top-0 left-1/4 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -z-10 group-hover:bg-indigo-500/20 transition-all duration-700"></div>
-                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl -z-10 group-hover:bg-purple-500/20 transition-all duration-700"></div>
+            <div className="bg-gray-900/60 backdrop-blur-md border border-gray-800 hover:border-[#FF7A00]/60 hover:shadow-[0_20px_60px_rgba(255,122,0,0.25)] hover:-translate-y-2 rounded-xl p-6 md:p-8 mb-10 relative overflow-hidden group transition-all duration-500 cursor-default mt-4">
+                {/* Glows */}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FF7A00]/5 via-transparent to-[#FF7A00]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-2xl -z-10"></div>
+                <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#FF7A00]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                <div className="inline-flex items-center justify-center p-3 bg-indigo-500/20 rounded-full mb-6 ring-1 ring-indigo-500/50 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                    <Rocket className="w-8 h-8 text-indigo-400" />
-                </div>
-
-                <h2 className="text-2xl font-bold text-white mb-2">Your Campaign is Ready to Launch 🚀</h2>
-                <p className="text-gray-300 max-w-2xl mx-auto mb-8 text-lg">
-                    Launch an automated marketing campaign across <span className="text-white font-medium">{recommendedChannels.length} channels</span> to <span className="text-white font-medium">{recipientCount} recipients</span>.
-                    MiCA will handle everything automatically.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-8 text-left">
-                    <div className="bg-black/30 p-4 rounded-lg border border-indigo-500/20 backdrop-blur-sm">
-                        <div className="text-indigo-400 font-bold text-lg mb-1">{emailCount} Email{emailCount !== 1 ? 's' : ''}</div>
-                        <div className="text-gray-400 text-sm">Scheduled & ready</div>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                    <div className="flex items-center gap-5 text-left flex-1">
+                        <div className="inline-flex items-center justify-center p-4 bg-[#FF7A00]/10 rounded-full ring-1 ring-[#FF7A00]/40 shadow-[0_0_20px_rgba(255,122,0,0.3)] shrink-0 group-hover:bg-[#FF7A00]/20 transition-colors duration-500">
+                            <Rocket className="w-8 h-8 text-[#FF7A00]" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
+                                MiCA has created your personalized strategy. Check it out!
+                            </h2>
+                            <div className="flex items-center gap-2 text-[#FF7A00] font-medium text-lg mt-2 animate-bounce">
+                                <span>Scroll down to review</span>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                            </div>
+                        </div>
                     </div>
-                    {(recommendedChannels.includes('whatsapp')) && (
-                        <div className="bg-black/30 p-4 rounded-lg border border-green-500/20 backdrop-blur-sm">
-                            <div className="text-green-400 font-bold text-lg mb-1">{whatsappCount} WhatsApp Msg{whatsappCount !== 1 ? 's' : ''}</div>
-                            <div className="text-gray-400 text-sm">Personalized & Automated</div>
-                        </div>
-                    )}
-                    {(recommendedChannels.includes('instagram')) && (
-                        <div className="bg-black/30 p-4 rounded-lg border border-pink-500/20 backdrop-blur-sm">
-                            <div className="text-pink-400 font-bold text-lg mb-1">{socialCount} Post{socialCount !== 1 ? 's' : ''}</div>
-                            <div className="text-gray-400 text-sm">Auto-published to Instagram</div>
-                        </div>
-                    )}
-                </div>
 
-                <div className="flex justify-center">
-                    <Button
-                        onClick={() => setShowConfirm(true)}
-                        className="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(79,70,229,0.4)] hover:shadow-[0_0_30px_rgba(79,70,229,0.6)] transform hover:scale-[1.05] transition-all duration-300 font-bold flex items-center gap-3"
-                    >
-                        <Rocket className="w-5 h-5" /> LAUNCH CAMPAIGN NOW
-                    </Button>
+                    <div className="flex flex-col items-end shrink-0">
+                        <Button
+                            variant="custom"
+                            onClick={() => setShowConfirm(true)}
+                            className="bg-[#FF7A00] hover:bg-[#FF9500] text-white px-8 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(255,122,0,0.5)] group-hover:shadow-[0_10px_35px_rgba(255,122,0,0.6)] transform group-hover:scale-[1.05] hover:-translate-y-1 transition-all duration-300 font-bold flex items-center gap-2 border border-[#FF7A00] group-hover:border-white/50"
+                        >
+                            <Rocket className="w-5 h-5 text-white" /> LAUNCH CAMPAIGN NOW
+                        </Button>
+                        <p className="text-xs text-indigo-300/50 mt-2 text-right">
+                            {recipientCount} recipients • {recommendedChannels.length} channels
+                        </p>
+                    </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
-                    By launching, you agree to send automated messages.
-                </p>
             </div>
         );
     }
@@ -307,9 +298,10 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
                             Cancel
                         </Button>
                         <Button
+                            variant="custom"
                             onClick={handleLaunch}
                             disabled={isLaunching}
-                            className="bg-indigo-600 hover:bg-indigo-500 text-white min-w-[160px] relative overflow-hidden"
+                            className="bg-[#FF7A00] hover:bg-[#FF8800] text-white min-w-[160px] relative overflow-hidden shadow-[0_0_15px_rgba(255,122,0,0.4)] border border-[#FF7A00]"
                         >
                             {isLaunching ? (
                                 <span className="flex items-center gap-2">

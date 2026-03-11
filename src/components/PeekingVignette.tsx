@@ -50,7 +50,7 @@ function PeekingEye({ x, y, startX, startY, size, delay, irisColor, gazeX, gazeY
       transition={{ delay: delay / 1000, duration: 0.6, ease: 'backOut' }}
     >
       <div className="peeking-sclera">
-        {/* Iris - Restored randomized color, saturated, hard edges */}
+        {/* Iris - Adjusted to be slightly transparent to blend with the glassmorphism theme */}
         <div style={{
           position: 'absolute', borderRadius: '50%',
           width: irisSize, height: irisSize,
@@ -58,12 +58,14 @@ function PeekingEye({ x, y, startX, startY, size, delay, irisColor, gazeX, gazeY
           marginTop: -irisSize / 2 + irisOffY,
           marginLeft: -irisSize / 2 + irisOffX,
           backgroundColor: irisColor,
+          opacity: 0.85,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.3)',
         }}>
-          {/* Pupil - Pure black hard circle */}
+          {/* Pupil - Dark grey/black, slightly soft */}
           <div style={{
             width: pupilSize, height: pupilSize, borderRadius: '50%',
-            backgroundColor: '#000000',
+            backgroundColor: 'rgba(20, 20, 20, 0.9)',
           }} />
         </div>
       </div>
@@ -152,6 +154,7 @@ interface Props {
   visible: boolean;
   gazeX: number;
   gazeY: number;
+  version?: 'modern' | 'classic';
 }
 
 export default function PeekingVignette({ visible, gazeX, gazeY }: Props) {
@@ -159,27 +162,11 @@ export default function PeekingVignette({ visible, gazeX, gazeY }: Props) {
 
   useEffect(() => {
     if (visible) {
-      setEyes(generateVignette(140));
+      setEyes(prev => prev.length > 0 ? prev : generateVignette(140));
     } else {
       setEyes([]);
     }
   }, [visible]);
-
-  // Force random vignette appearances occasionally
-  useEffect(() => {
-    const randomTrigger = () => {
-      setEyes(prev => {
-        if (prev.length === 0) {
-          setTimeout(() => setEyes([]), 2500);
-          return generateVignette(140);
-        }
-        return prev;
-      });
-      setTimeout(randomTrigger, 30000 + Math.random() * 20000); // 30-50s
-    };
-    const t = setTimeout(randomTrigger, 20000); // First delay 20s
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <AnimatePresence>

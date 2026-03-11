@@ -4,6 +4,7 @@ import { Plus, Calendar, BarChart2, MoreVertical, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase';
 import { Button } from '../components/ui/Button';
 import { Layout } from '../components/Layout';
+import MiCALogo from '../components/MiCALogo';
 import { useAuth } from '../context/AuthContext';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../data/demoData';
 
@@ -79,7 +80,9 @@ export const CampaignList: React.FC = () => {
     return (
         <Layout>
             <div className="container mx-auto px-4 py-8">
-
+                <div className="flex justify-center mb-8 w-full z-20 relative">
+                    <MiCALogo variant="header" />
+                </div>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-white mb-2">My Campaigns</h1>
@@ -95,8 +98,8 @@ export const CampaignList: React.FC = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
                     </div>
                 ) : campaigns.length === 0 ? (
-                    <div className="text-center py-20 bg-gray-900 border border-gray-800 rounded-xl animate-fade-in">
-                        <div className="bg-gray-800/50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="text-center py-20 bg-gray-900/40 backdrop-blur-md border border-white/5 rounded-xl animate-fade-in shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+                        <div className="bg-indigo-500/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_20px_rgba(99,102,241,0.2)]">
                             <Sparkles className="w-10 h-10 text-indigo-400" />
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">No campaigns yet</h3>
@@ -104,7 +107,7 @@ export const CampaignList: React.FC = () => {
                             Create your first campaign and let MiCA handle the marketing.
                         </p>
                         <Link to="/create-campaign">
-                            <Button size="lg" className="shadow-lg shadow-indigo-500/20">Create Campaign →</Button>
+                            <Button size="lg" className="shadow-[0_4px_12px_rgba(99,102,241,0.4)] hover:shadow-[0_4px_20px_rgba(99,102,241,0.6)]">Create Campaign →</Button>
                         </Link>
                     </div>
                 ) : (
@@ -113,7 +116,7 @@ export const CampaignList: React.FC = () => {
                             <Link
                                 key={campaign.id}
                                 to={getLink(campaign)}
-                                className="block bg-gray-900 border border-gray-800 rounded-xl p-6 hover:border-indigo-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-500/10 group"
+                                className="block bg-gray-900/60 backdrop-blur-sm border border-white/5 rounded-xl p-6 hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] group"
                                 style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
                             >
                                 <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">

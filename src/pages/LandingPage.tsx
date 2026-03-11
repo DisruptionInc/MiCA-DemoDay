@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, FileText, Rocket } from "lucide-react";
 import { Button } from '../components/ui/Button';
 import { Layout } from '../components/Layout';
 import { LANDING_VIDEOS } from '../config/landingVideos';
-import FloatingHeroEyeball from '../components/FloatingHeroEyeball';
-import PeekingVignette from '../components/PeekingVignette';
 import MiCALogo from '../components/MiCALogo';
 import EyeCharacter from '../components/EyeCharacter';
 import { useTypewriter } from '../hooks/useTypewriter';
@@ -40,7 +38,82 @@ const dynamicPhrases = [
     "adapts & executes",
 ];
 
-export const LandingPage: React.FC = () => {
+const TypewriterHeading = ({ text, className }: { text: string, className?: string }) => {
+    // Split text into words to handle wrapping correctly
+    const words = text.split(' ');
+    let charCount = 0;
+
+    return (
+        <motion.h2
+            className={`${className} flex flex-wrap justify-center items-center`}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+        >
+            {words.map((word, wordIndex) => {
+                const chars = word.split('');
+                const result = (
+                    <span key={wordIndex} className="whitespace-nowrap flex">
+                        {chars.map((char, charIndex) => {
+                            const index = charCount + charIndex;
+                            return (
+                                <motion.span
+                                    key={index}
+                                    variants={{
+                                        hidden: { opacity: 0, display: 'none' },
+                                        visible: { opacity: 1, display: 'inline' }
+                                    }}
+                                    transition={{ duration: 0.01, delay: index * 0.04 }}
+                                >
+                                    {char}
+                                </motion.span>
+                            );
+                        })}
+                        {/* Add space after word unless it's the last one */}
+                        {wordIndex < words.length - 1 && (
+                            <motion.span
+                                variants={{
+                                    hidden: { opacity: 0, display: 'none' },
+                                    visible: { opacity: 1, display: 'inline' }
+                                }}
+                                transition={{ duration: 0.01, delay: (charCount + chars.length) * 0.04 }}
+                            >
+                                &nbsp;
+                            </motion.span>
+                        )}
+                    </span>
+                );
+                charCount += chars.length + 1; // +1 for the space
+                return result;
+            })}
+            <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+                className="text-[#FF7A00] ml-1 font-light"
+            >
+                |
+            </motion.span>
+        </motion.h2>
+    );
+};
+
+const startLaunchingWords = ["Start Launching."];
+
+interface LandingPageProps {
+    version?: 'modern' | 'classic';
+    onVersionChange?: (version: 'modern' | 'classic') => void;
+}
+
+export const LandingPage: React.FC<LandingPageProps> = ({ version: eyeVersion = 'modern', onVersionChange }) => {
+    const [isBamming, setIsBamming] = useState(false);
+
+    const handleBamEnter = () => {
+        if (!isBamming) {
+            setIsBamming(true);
+            setTimeout(() => setIsBamming(false), 500); // Ensures the 0.5s bamShake animation completes
+        }
+    };
+
     // ── Data Arrays ────────────────────────────────────────────────────────
     const processSteps = [
         {
@@ -149,42 +222,6 @@ export const LandingPage: React.FC = () => {
         }
     ];
 
-    // ── Eyeball Tracking State ────────────────────────────────────────────────
-    const [mousePos, setMousePos] = React.useState({ x: 0, y: 0 });
-    const [vignetteVisible, setVignetteVisible] = React.useState(false);
-
-    const idleTimeoutRef = React.useRef<NodeJS.Timeout>(null);
-    const vignetteHideTimeoutRef = React.useRef<NodeJS.Timeout>(null);
-
-    const triggerVignette = React.useCallback((duration = 2500) => {
-        setVignetteVisible(true);
-        if (vignetteHideTimeoutRef.current) clearTimeout(vignetteHideTimeoutRef.current);
-        vignetteHideTimeoutRef.current = setTimeout(() => setVignetteVisible(false), duration);
-    }, []);
-
-    React.useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            setMousePos({ x: e.clientX, y: e.clientY });
-
-            // Reset the idle timer (triggers vignette after 3s of NO mouse movement)
-            if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
-            idleTimeoutRef.current = setTimeout(() => {
-                setVignetteVisible((prev) => {
-                    if (!prev) triggerVignette(2500); // 2.5s duration for idle
-                    return prev || true;
-                });
-            }, 3000);
-        };
-        window.addEventListener('mousemove', handleMouseMove);
-        // Initial timer
-        idleTimeoutRef.current = setTimeout(() => triggerVignette(2500), 3000);
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
-            if (vignetteHideTimeoutRef.current) clearTimeout(vignetteHideTimeoutRef.current);
-        };
-    }, [triggerVignette]);
 
     const typewriterText = useTypewriter({
         words: dynamicPhrases,
@@ -193,14 +230,15 @@ export const LandingPage: React.FC = () => {
         pauseDuration: 800,
     });
 
+    const startLaunchingText = useTypewriter({
+        words: startLaunchingWords,
+        typingSpeed: 60,
+        deletingSpeed: 40,
+        pauseDuration: 1500,
+    });
+
     return (
         <Layout>
-            {/* The global vignette layer */}
-            <PeekingVignette visible={vignetteVisible} gazeX={mousePos.x / window.innerWidth} gazeY={mousePos.y / window.innerHeight} />
-
-            {/* The Floating Autonomous Hero Element */}
-            <FloatingHeroEyeball onGiggle={() => triggerVignette(2500)} />
-
             {/* Hero Section */}
             <section className="relative min-h-screen flex flex-col justify-start pt-16 pb-20 overflow-hidden">
                 {/* Subtle grid overlay */}
@@ -212,12 +250,12 @@ export const LandingPage: React.FC = () => {
                         {/* Left Column - Content */}
                         <div className="text-left animate-in slide-in-from-bottom-5 duration-1000">
                             {/* MiCA Animated Acronym Logo */}
-                            <div className="mb-12 md:mb-16 pb-4">
+                            <div className="mb-4 md:mb-6 pb-2">
                                 <MiCALogo />
                             </div>
 
                             {/* Flexible height container to prevent jumping/overlap */}
-                            <div className="min-h-[140px] md:min-h-[180px] lg:min-h-[220px] mb-8">
+                            <div className="min-h-[120px] md:min-h-[160px] lg:min-h-[200px] mb-8">
                                 <h1 className="text-5xl md:text-6xl xl:text-7xl font-bold text-white tracking-tight leading-tight">
                                     Marketing that <br />
                                     <span className="text-[#FF7A00] italic font-serif opacity-90">{typewriterText}</span>
@@ -231,7 +269,7 @@ export const LandingPage: React.FC = () => {
 
                             <div className="flex flex-col sm:flex-row gap-5 relative z-20" data-interest="buttons">
                                 <Link to="/create-campaign">
-                                    <Button size="lg" className="bg-[#FF7A00] hover:bg-[#FF6600] text-white px-10 py-6 text-lg rounded-full shadow-lg shadow-[#FF7A00]/20 transition-all transform hover:scale-105 border-none">
+                                    <Button variant="custom" size="lg" className="bg-[#FF7A00] hover:bg-[#FF6600] text-white px-10 py-6 text-lg rounded-full shadow-lg shadow-[#FF7A00]/20 transition-all transform hover:scale-105 border-none">
                                         Create your campaign
                                     </Button>
                                 </Link>
@@ -250,10 +288,10 @@ export const LandingPage: React.FC = () => {
                                 <div className="relative z-10 flex shrink-0 items-center justify-center transform translate-y-4" style={{ width: '36%', maxWidth: '380px', aspectRatio: '9 / 16' }}>
                                     {/* Peeking eyeball from behind left video */}
                                     <div className="absolute top-[30%] -left-[15%] z-0 transform -rotate-[20deg]">
-                                        <EyeCharacter size={40} />
+                                        <EyeCharacter size={40} version={eyeVersion} />
                                     </div>
                                     <div className="absolute inset-0 z-10 bg-gray-800/80 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden pointer-events-none">
-                                        <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity pointer-events-auto">
+                                        <video autoPlay loop muted playsInline className="w-full h-full object-cover scale-110 opacity-90 hover:opacity-100 transition-opacity pointer-events-auto">
                                             <source src="/media/video1.mp4" type="video/mp4" />
                                         </video>
                                     </div>
@@ -262,7 +300,7 @@ export const LandingPage: React.FC = () => {
                                 <div className="relative z-20 flex shrink-0 items-center justify-center transform -translate-y-6 scale-105" style={{ width: '36%', maxWidth: '380px', aspectRatio: '9 / 16' }}>
                                     {/* Peeking eyeball from top-right of center video */}
                                     <div className="absolute -top-[12%] -right-[15%] z-0 transform rotate-[15deg]">
-                                        <EyeCharacter size={45} />
+                                        <EyeCharacter size={45} version={eyeVersion} />
                                     </div>
                                     <div className="absolute inset-0 z-10 bg-gray-800/90 rounded-2xl border border-gray-600 shadow-[0_0_40px_rgba(0,0,0,0.5)] overflow-hidden pointer-events-none">
                                         <video autoPlay loop muted playsInline className="w-full h-full object-cover pointer-events-auto">
@@ -274,11 +312,11 @@ export const LandingPage: React.FC = () => {
                                 <div className="relative z-10 flex shrink-0 items-center justify-center transform translate-y-0" style={{ width: '36%', maxWidth: '380px', aspectRatio: '9 / 16' }}>
                                     {/* Peeking eyeball from bottom of right video */}
                                     <div className="absolute -bottom-[10%] -right-[15%] z-0 transform rotate-[45deg]">
-                                        <EyeCharacter size={50} />
+                                        <EyeCharacter size={50} version={eyeVersion} />
                                     </div>
                                     {/* Peeking eyeball in between middle and right (placed relative to video 3 left side) */}
                                     <div className="absolute top-[15%] -left-[20%] z-0 transform rotate-[10deg]">
-                                        <EyeCharacter size={35} />
+                                        <EyeCharacter size={35} version={eyeVersion} />
                                     </div>
                                     <div className="absolute inset-0 z-10 bg-gray-900 rounded-2xl border-2 border-indigo-500/30 shadow-2xl overflow-hidden pointer-events-none">
                                         <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity pointer-events-auto">
@@ -289,7 +327,10 @@ export const LandingPage: React.FC = () => {
                             </div>
 
                             {/* NEW Tagline Below Videos (with Bam FX & Impact Lines) */}
-                            <div className="mt-8 relative z-20 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-300 transform md:-translate-y-4 group cursor-pointer hover-bam">
+                            <div
+                                className={`mt-8 relative z-20 animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-300 transform md:-translate-y-4 group cursor-pointer hover-bam ${isBamming ? 'is-bamming' : ''}`}
+                                onMouseEnter={handleBamEnter}
+                            >
 
 
                                 <h2 className="relative text-2xl md:text-3xl lg:text-4xl font-extrabold tracking-tight text-white uppercase italic text-center leading-tight">
@@ -308,7 +349,7 @@ export const LandingPage: React.FC = () => {
                 <div className="container mx-auto px-4 md:px-8 max-w-[1400px]">
                     <div className="text-center max-w-3xl mx-auto mb-20">
                         <p className="text-[#FF7A00] font-semibold tracking-wider uppercase text-sm mb-4">HOW IT WORKS</p>
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">How MiCA Weaves Its Magic</h2>
+                        <TypewriterHeading text="How MiCA Weaves Its Magic" className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6" />
                         <p className="text-xl text-gray-400">Three simple steps to put your marketing on autopilot.</p>
                     </div>
 
@@ -335,7 +376,7 @@ export const LandingPage: React.FC = () => {
                                     <div
                                         className={`glass p-8 md:p-10 rounded-3xl relative overflow-hidden group border border-white/5 ${step.hoverBorderClass} text-left transition-all duration-500 hover:-translate-y-3 hover:scale-[1.03] hover:bg-white/10`}
                                         style={{ boxShadow: 'var(--hover-shadow, none)' }}
-                                        onMouseEnter={(e) => e.currentTarget.style.setProperty('--hover-shadow', `0 0 60px ${step.color}80`)}
+                                        onMouseEnter={(e) => e.currentTarget.style.setProperty('--hover-shadow', `0 0 20px ${step.color}B3`)}
                                         onMouseLeave={(e) => e.currentTarget.style.setProperty('--hover-shadow', 'none')}
                                     >
                                         <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} to-transparent opacity-50`}></div>
@@ -360,7 +401,7 @@ export const LandingPage: React.FC = () => {
                 <div className="container mx-auto px-4 md:px-8 max-w-[1400px]">
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <p className="text-[#FF7A00] font-semibold tracking-wider uppercase text-sm mb-4">THE PLAYBOOK</p>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Battle-Tested Frameworks</h2>
+                        <TypewriterHeading text="Battle-Tested Frameworks" className="text-4xl md:text-5xl font-bold text-white mb-6" />
                         <p className="text-xl text-gray-400">Every campaign is built on proven methodologies that have filled conference halls, sold out workshops, and launched products worldwide. No guesswork—just execution.</p>
                     </div>
 
@@ -372,7 +413,7 @@ export const LandingPage: React.FC = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                                className="glass p-8 border border-white/5 rounded-2xl transition-all duration-500 group hover:scale-[1.05] hover:-translate-y-3 hover:border-[#FF7A00] hover:shadow-[0_0_60px_rgba(255,122,0,0.4)] hover:bg-white/10 relative overflow-hidden"
+                                className="glass p-8 border border-white/5 rounded-2xl transition-all duration-500 group hover:scale-[1.05] hover:-translate-y-3 hover:border-[#FF7A00] hover:shadow-[0_0_20px_rgba(255,122,0,0.8)] hover:bg-white/10 relative overflow-hidden"
                             >
                                 <p className={`font-serif text-5xl opacity-40 mb-4 group-hover:opacity-80 transition-opacity ${strategy.color}`}>
                                     {strategy.number}
@@ -393,7 +434,7 @@ export const LandingPage: React.FC = () => {
                 <div className="container mx-auto px-4 md:px-8 max-w-[1400px]">
                     <div className="text-center max-w-3xl mx-auto mb-16">
                         <p className="text-[#FF7A00] font-semibold tracking-wider uppercase text-sm mb-4">Success Stories</p>
-                        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Results That Speak Volumes</h2>
+                        <TypewriterHeading text="Results That Speak Volumes" className="text-4xl md:text-5xl font-bold text-white mb-6" />
                     </div>
 
                     {/* Featured Testimonial */}
@@ -473,7 +514,10 @@ export const LandingPage: React.FC = () => {
 
                         <h2 className="text-5xl md:text-7xl font-black text-white mb-8 relative z-10 tracking-tight leading-tight">
                             Stop Planning. <br />
-                            <span className="text-[#FF7A00] drop-shadow-[0_0_15px_rgba(255,122,0,0.5)]">Start Launching.</span>
+                            <span className="text-[#FF7A00] drop-shadow-[0_0_15px_rgba(255,122,0,0.5)]">
+                                {startLaunchingText}
+                                <span className="animate-pulse">|</span>
+                            </span>
                         </h2>
 
                         <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto relative z-10 leading-relaxed font-light">
@@ -482,7 +526,7 @@ export const LandingPage: React.FC = () => {
 
                         <div className="flex flex-col sm:flex-row justify-center gap-6 relative z-10">
                             <Link to="/create-campaign" className="w-full sm:w-auto">
-                                <Button size="lg" className="bg-[#FF7A00] hover:bg-[#FF8800] text-white px-14 py-8 text-xl font-bold rounded-full w-full shadow-[0_0_40px_rgba(255,122,0,0.6)] hover:shadow-[0_0_60px_rgba(255,122,0,0.8)] transition-all hover:-translate-y-1 border-none">
+                                <Button variant="custom" size="lg" className="bg-[#FF7A00] hover:bg-[#FF8800] text-white px-14 py-8 text-xl font-bold rounded-full w-full shadow-[0_0_40px_rgba(255,122,0,0.6)] hover:shadow-[0_0_60px_rgba(255,122,0,0.8)] transition-all hover:-translate-y-1 border-none">
                                     Claim My Spot
                                 </Button>
                             </Link>

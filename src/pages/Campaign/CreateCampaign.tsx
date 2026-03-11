@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Layout } from '../../components/Layout';
+import MiCALogo from '../../components/MiCALogo';
 
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
 
@@ -18,7 +19,6 @@ export const CreateCampaign: React.FC = () => {
 
     // Form State
     const [formData, setFormData] = useState({
-        creatorName: '',
         productName: '',
         productDescription: '',
         productLinks: '',
@@ -133,7 +133,7 @@ export const CreateCampaign: React.FC = () => {
                     product_links: formData.productLinks,
                     tone: formData.tone === 'Custom' ? formData.toneCustomWords : formData.tone,
                     tone_custom_words: formData.tone === 'Custom' ? formData.toneCustomWords : null,
-                    creator_name: formData.creatorName,
+                    creator_name: user?.user_metadata?.full_name || 'Business Owner',
                     status: 'tone_preview',
                 })
                 .select()
@@ -186,27 +186,20 @@ export const CreateCampaign: React.FC = () => {
     return (
         <Layout>
             <div className="container mx-auto px-4 py-8 max-w-4xl">
+                <div className="flex justify-center mb-8 w-full z-20 relative">
+                    <MiCALogo variant="header" />
+                </div>
                 <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                    <Sparkles className="text-indigo-400" /> Create New Campaign
+                    <Sparkles className="text-[#FF7A00]" /> Create New Campaign
                 </h1>
 
-                <form onSubmit={handleSubmit} className="space-y-8 bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-xl">
+                <form onSubmit={handleSubmit} className="space-y-8 bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
 
                     {/* Section 1: Product Details */}
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold flex items-center gap-2 border-b border-gray-800 pb-2">
                             <FileText className="w-5 h-5 text-indigo-400" /> Basic Details
                         </h2>
-
-                        <Input
-                            label="Your Name"
-                            name="creatorName"
-                            value={formData.creatorName}
-                            onChange={handleInputChange}
-                            required
-                            placeholder="e.g. Arjun"
-                            helperText="This name will be used in your personalized video."
-                        />
 
                         <Input
                             label="Product / Event Name"
@@ -441,8 +434,9 @@ export const CreateCampaign: React.FC = () => {
                     <div className="pt-4">
                         <Button
                             type="submit"
+                            variant="custom"
                             size="lg"
-                            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transform hover:scale-[1.01] transition-all py-4 text-lg font-bold shadow-2xl"
+                            className="w-full bg-gradient-to-r from-[#FF7A00] to-[#FF4400] hover:from-[#FF6600] hover:to-[#FF3300] transform hover:scale-[1.01] transition-all py-4 text-lg font-bold shadow-[0_4px_12px_rgba(255,100,0,0.4)] hover:shadow-[0_4px_20px_rgba(255,100,0,0.6)]"
                             isLoading={loading}
                             rightIcon={<Rocket className="w-5 h-5" />}
                         >

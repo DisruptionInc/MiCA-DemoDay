@@ -10,6 +10,7 @@ import { buildImagePrompt } from '../../services/imagePromptBuilder';
 import { generateVideo } from '../../services/videoService';
 import { HEYGEN_CONFIG } from '../../config/heygen';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
+import MiCALogo from '../../components/MiCALogo';
 
 interface Campaign {
     id: string;
@@ -730,12 +731,14 @@ Rules:
 
     return (
         <Layout>
-            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-
+            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 pt-10">
+                <div className="mb-8 md:mb-12 w-full z-20 relative text-center">
+                    <MiCALogo variant="header" />
+                </div>
                 <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center p-4 bg-indigo-500/10 rounded-full mb-6 relative">
-                        <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
-                        <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full animate-spin-slow"></div>
+                    <div className="inline-flex items-center justify-center p-4 bg-[#FF7A00]/10 rounded-full mb-6 relative">
+                        <Sparkles className="w-12 h-12 text-[#FF7A00] animate-pulse" />
+                        <div className="absolute inset-0 border-4 border-[#FF7A00]/20 rounded-full animate-spin-slow"></div>
                     </div>
                     <h1 className="text-3xl font-bold mb-3">Creating Your Campaign</h1>
                     <p className="text-gray-400 max-w-lg mx-auto">
@@ -743,7 +746,7 @@ Rules:
                     </p>
                 </div>
 
-                <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div className="w-full max-w-md bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
                     <div className="space-y-6">
                         {STEPS.map((step, index) => {
                             const isCompleted = completedSteps.includes(step.id);
@@ -761,13 +764,13 @@ Rules:
                                             <Circle className="w-6 h-6 text-gray-700" />
                                         )}
                                     </div>
-                                    <div className={`text-sm font-medium flex-1 ${isCompleted ? 'text-gray-300' :
+                                    <div className={`text-base font-medium flex-1 ${isCompleted ? 'text-gray-400' :
                                         isCurrent ? 'text-white' :
                                             'text-gray-600'
                                         }`}>
                                         {step.label}
                                         {isCurrent && progressText && step.id === 'images' && (
-                                            <div className="text-xs text-indigo-400 mt-1">{progressText}</div>
+                                            <div className="text-sm text-[#FF7A00] mt-1">{progressText}</div>
                                         )}
                                     </div>
                                 </div>

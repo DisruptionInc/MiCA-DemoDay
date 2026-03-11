@@ -56,23 +56,12 @@ export default function App() {
 
   // ── Peeking vignette logic ─────────────────────────────────────────────────
   const [isPeeking, setIsPeeking] = useState(false);
-  const peekTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerPeek = () => {
     if (isPeeking) return;
     setIsPeeking(true);
-    setTimeout(() => setIsPeeking(false), 4500); // Eyeballs peek for 4.5s then retreat
+    setTimeout(() => setIsPeeking(false), 2500); // Eyeballs peek for 2.5s then retreat
   };
-
-  // Random periodic peeking (every 10–30 seconds)
-  useEffect(() => {
-    const schedulePeek = () => {
-      triggerPeek();
-      peekTimeout.current = setTimeout(schedulePeek, Math.random() * 20000 + 10000);
-    };
-    peekTimeout.current = setTimeout(schedulePeek, 8000); // First peek after 8s
-    return () => { if (peekTimeout.current) clearTimeout(peekTimeout.current); };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Idle-triggered peeking — user hasn't moved mouse or scrolled for 3s
   useEffect(() => {

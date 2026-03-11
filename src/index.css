@@ -62,12 +62,14 @@ body {
   }
 }
 
-.hover-bam {
-  /* Let it rest at normal scale when not hovered */
+.hover-bam:hover h2,
+.is-bamming h2 {
+  animation: bamShake 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
 }
 
-.hover-bam:hover h2 {
-  animation: bamShake 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+/* Ensure smooth transition back to normal size when animation class is removed */
+.hover-bam h2 {
+  transition: transform 0.3s ease-out;
 }
 
 /* Premium Hover Effects */
@@ -102,9 +104,39 @@ body {
 
 .card-lift:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(245, 158, 11, 0.5);
   background-color: rgba(255, 255, 255, 0.05);
   /* Slight glassmorphism lightening */
   border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #09090b;
+  /* gray-950 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  /* gray-800 */
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF7A00;
+  /* MiCA Orange */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #27272a #09090b;
 }

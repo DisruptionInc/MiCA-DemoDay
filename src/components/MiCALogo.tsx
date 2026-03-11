@@ -24,7 +24,7 @@ const LETTERS: LetterDef[] = [
   { char: 'A', fullWord: 'utomation' },
 ];
 
-export default function MiCALogo() {
+export default function MiCALogo({ variant = 'hero' }: { variant?: 'hero' | 'header' }) {
   // Which letter index (0-3) is randomly expanding, or -1 for none
   const [expandedIdx, setExpandedIdx] = useState(-1);
   // Which letter index is currently being hovered
@@ -53,8 +53,14 @@ export default function MiCALogo() {
     return () => clearTimeout(t);
   }, []);
 
+  const isHeader = variant === 'header';
+  const mainFont = isHeader ? 'clamp(40px, 5vw, 60px)' : 'clamp(90px, 11vw, 140px)';
+  const lowerFont = isHeader ? 'clamp(30px, 4vw, 48px)' : 'clamp(70px, 8vw, 110px)';
+  const expandFont = isHeader ? 'clamp(14px, 1.5vw, 20px)' : 'clamp(28px, 3vw, 42px)';
+  const eyeSize = isHeader ? 40 : 90;
+
   return (
-    <div className="flex items-baseline gap-0 select-none" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className={`flex items-baseline gap-0 select-none ${isHeader ? 'mb-4' : ''}`} style={{ fontFamily: "'Inter', sans-serif" }}>
       {LETTERS.map((letter, i) => (
         <span
           key={i}
@@ -66,19 +72,18 @@ export default function MiCALogo() {
           <span
             className="font-black text-[#FF7A00] text-glow relative inline-block"
             style={{
-              fontSize: 'clamp(90px, 11vw, 140px)', /* Greatly increased */
+              fontSize: mainFont,
               lineHeight: 1,
-              ...(letter.isLowercase ? { fontSize: 'clamp(70px, 8vw, 110px)' } : {}),
+              ...(letter.isLowercase ? { fontSize: lowerFont } : {}),
             }}
           >
             {letter.char === 'i' ? (
               <>
                 {/* Dotless 'i' */}
                 <span className="relative z-10">ı</span>
-                {/* Custom Eyeball Dot */}
                 <div className="absolute top-[0.08em] left-[52%] -translate-x-1/2 flex items-center justify-center z-20 pointer-events-auto" style={{ width: '0.25em', height: '0.25em' }}>
                   <div className="scale-[0.3] md:scale-[0.4] lg:scale-[0.45] origin-center">
-                    <EyeCharacter size={90} />
+                    <EyeCharacter size={eyeSize} />
                   </div>
                 </div>
               </>
@@ -93,7 +98,7 @@ export default function MiCALogo() {
               <motion.span
                 className="font-light text-[#FF7A00]/70 whitespace-nowrap overflow-hidden"
                 style={{
-                  fontSize: 'clamp(28px, 3vw, 42px)',
+                  fontSize: expandFont,
                   lineHeight: 1,
                 }}
                 initial={{ width: 0, opacity: 0 }}
@@ -104,7 +109,7 @@ export default function MiCALogo() {
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               >
-                {letter.fullWord}
+                <span className="inline-block pr-[8px] md:pr-[12px]">{letter.fullWord}</span>
               </motion.span>
             )}
           </AnimatePresence>

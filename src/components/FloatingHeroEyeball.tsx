@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, useSpring } from 'framer-motion';
+import { useSpring, motion } from 'framer-motion';
 import EyeCharacter from './EyeCharacter';
 
 interface Props {
   onGiggle: () => void;
+  version?: 'modern' | 'classic';
 }
 
-export default function FloatingHeroEyeball({ onGiggle }: Props) {
+export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Props) {
   // Start roughly center right
   const [targetPos, setTargetPos] = useState({
     x: typeof window !== 'undefined' ? window.innerWidth * 0.75 : 800,
@@ -33,7 +34,8 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
       mouseX = e.clientX;
       mouseY = Math.max(90, e.clientY); // Don't chase cursor under the header
       if (isChasingRef.current) {
-        setTargetPos({ x: mouseX, y: mouseY });
+        // Offset by 80px so it stays close but doesn't block the actual click target
+        setTargetPos({ x: mouseX + 80, y: mouseY + 80 });
       }
     };
     window.addEventListener('mousemove', handleMouseMove);
@@ -43,7 +45,7 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
       // 20% chance to chase the mouse enthusiastically to encourage a click
       if (Math.random() < 0.2) {
         isChasingRef.current = true;
-        setTargetPos({ x: mouseX, y: mouseY });
+        setTargetPos({ x: mouseX + 80, y: mouseY + 80 });
 
         // Stop chasing after 2.5s
         setTimeout(() => {
@@ -108,7 +110,7 @@ export default function FloatingHeroEyeball({ onGiggle }: Props) {
         pointerEvents: 'auto'
       }}
     >
-      <EyeCharacter size={100} onGiggle={onGiggle} />
+      <EyeCharacter size={100} onGiggle={onGiggle} version={version} />
     </motion.div>
   );
 }

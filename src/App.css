@@ -89,13 +89,13 @@
     border: none;
     border-radius: 100px;
     cursor: pointer;
-    box-shadow: 0 4px 22px rgba(255, 100, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(255, 100, 0, 0.6);
     transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(255, 100, 0, 0.45);
+    box-shadow: 0 6px 16px rgba(255, 100, 0, 0.8);
 }
 
 .btn-ghost {

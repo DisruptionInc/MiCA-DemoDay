@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { supabase } from '../../lib/supabase';
 import {
     LayoutDashboard, Mail, MessageSquare, Instagram,
-    ArrowLeft, Video, Mic, CheckCircle2, PauseCircle, PlayCircle, Send
+    ArrowLeft, Video, CheckCircle2, PauseCircle, PlayCircle, Send
 } from 'lucide-react';
 import { VideoPlayer, SocialPostCard } from '../../components/DashboardComponents';
 import { LaunchSection } from '../../components/Dashboard/LaunchSection';
@@ -500,372 +500,377 @@ export const Dashboard: React.FC = () => {
 
 
         return (
-            <div className="space-y-10 animate-in fade-in max-w-5xl mx-auto pb-12">
-                {/* â”€â”€â”€ HEADER BANNER â”€â”€â”€ */}
-                <div className={`bg-gradient-to-r ${gradientClass} rounded-2xl p-10 relative overflow-hidden`}>
-                    <div className="absolute inset-0 bg-black/20"></div>
-                    <div className="relative z-10">
-                        <div className="flex flex-wrap gap-3 mb-5">
-                            {methodology?.name && (
-                                <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
-                                    {methodology.name.replace('_', ' ')} Methodology
-                                </span>
-                            )}
-                            <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
-                                {plan.campaign_duration_days || 28} Day Campaign
-                            </span>
-                            <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
-                                ₹{campaign.budget.toLocaleString('en-IN')} Budget
-                            </span>
+            <div className="animate-in fade-in max-w-5xl mx-auto pb-12">
+                <div className="bg-gray-950/40 relative border border-gray-800 rounded-3xl p-6 md:p-12 shadow-[0_0_60px_rgba(0,0,0,0.5)] mt-8 group/document ring-1 ring-white/5 space-y-10">
+                    <div className="absolute -inset-px bg-gradient-to-br from-indigo-500/20 via-purple-500/10 to-pink-500/20 rounded-3xl opacity-0 group-hover/document:opacity-100 transition-opacity duration-700 blur border-none pointer-events-none z-0"></div>
+                    <div className="relative z-10 space-y-10">
+                        {/* â”€â”€â”€ HEADER BANNER â”€â”€â”€ */}
+                        <div className={`bg-gradient-to-r ${gradientClass} rounded-2xl p-10 relative overflow-hidden`}>
+                            <div className="absolute inset-0 bg-black/20"></div>
+                            <div className="relative z-10">
+                                <div className="flex flex-wrap gap-3 mb-5">
+                                    {methodology?.name && (
+                                        <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
+                                            {methodology.name.replace('_', ' ')} Methodology
+                                        </span>
+                                    )}
+                                    <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
+                                        {plan.campaign_duration_days || 28} Day Campaign
+                                    </span>
+                                    <span className="bg-white/25 backdrop-blur-sm text-white text-sm font-bold px-4 py-2 rounded-full uppercase tracking-wider">
+                                        ₹{campaign.budget.toLocaleString('en-IN')} Budget
+                                    </span>
+                                </div>
+                                <h2 className="text-4xl font-bold text-white mb-3">{plan.campaign_name || campaign.product_name}</h2>
+                                <p className="text-white/90 text-base leading-relaxed max-w-3xl">{plan.strategy_summary}</p>
+                            </div>
                         </div>
-                        <h2 className="text-4xl font-bold text-white mb-3">{plan.campaign_name || campaign.product_name}</h2>
-                        <p className="text-white/90 text-base leading-relaxed max-w-3xl">{plan.strategy_summary}</p>
-                    </div>
-                </div>
 
-                {/* â”€â”€â”€ NO CONTACT DATA ALERT â”€â”€â”€ */}
-                {plan.no_contact_data_notice && (
-                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 flex items-start gap-4">
-                        <div className="bg-amber-500/20 p-2.5 rounded-lg flex-shrink-0">
-                            <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h4 className="text-amber-300 font-bold text-base mb-1">Customer Data Required</h4>
-                            <p className="text-amber-100/80 text-base leading-relaxed">{plan.no_contact_data_notice}</p>
-                            <p className="text-amber-200/60 text-sm mt-2">Your entire campaign is ready — emails written, WhatsApp messages crafted, Instagram posts designed. Upload a CSV with customer contacts to activate delivery.</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* â”€â”€â”€ TWO COLUMN GRID: PERSONA + METHODOLOGY â”€â”€â”€ */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* TARGET PERSONA */}
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            Target Persona
-                        </h3>
-                        <p className="text-gray-200 text-base leading-relaxed mb-6">{persona.description}</p>
-
-                        {persona.pain_points?.length > 0 && (
-                            <div className="mb-5">
-                                <h4 className="text-sm font-bold text-red-400 uppercase tracking-wider mb-3">Pain Points</h4>
-                                <div className="space-y-2.5">
-                                    {persona.pain_points.map((point: string, i: number) => (
-                                        <div key={i} className="flex items-start gap-2.5">
-                                            <span className="text-red-400 mt-0.5 flex-shrink-0 text-lg">•</span>
-                                            <span className="text-gray-200 text-base">{point}</span>
-                                        </div>
-                                    ))}
+                        {/* â”€â”€â”€ NO CONTACT DATA ALERT â”€â”€â”€ */}
+                        {plan.no_contact_data_notice && (
+                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-6 flex items-start gap-4">
+                                <div className="bg-amber-500/20 p-2.5 rounded-lg flex-shrink-0">
+                                    <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 className="text-amber-300 font-bold text-base mb-1">Customer Data Required</h4>
+                                    <p className="text-amber-100/80 text-base leading-relaxed">{plan.no_contact_data_notice}</p>
+                                    <p className="text-amber-200/60 text-sm mt-2">Your entire campaign is ready — emails written, WhatsApp messages crafted, Instagram posts designed. Upload a CSV with customer contacts to activate delivery.</p>
                                 </div>
                             </div>
                         )}
 
-                        {persona.motivations?.length > 0 && (
-                            <div>
-                                <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-3">Motivations</h4>
-                                <div className="space-y-2.5">
-                                    {persona.motivations.map((motive: string, i: number) => (
-                                        <div key={i} className="flex items-start gap-2.5">
-                                            <span className="text-emerald-400 mt-0.5 flex-shrink-0 text-lg">•</span>
-                                            <span className="text-gray-200 text-base">{motive}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                        {/* ─── TWO COLUMN GRID: PERSONA + METHODOLOGY ─── */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* TARGET PERSONA */}
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-3 pb-4 border-b border-white/10">
+                                    <svg className="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                    Target Persona
+                                </h3>
+                                <p className="text-gray-100 text-lg leading-relaxed mb-8">{persona.description}</p>
 
-                    {/* METHODOLOGY */}
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                            Chosen Methodology
-                        </h3>
-                        {methodology?.name && (
-                            <div className={`bg-gradient-to-r ${gradientClass} text-white text-xl font-bold px-5 py-3 rounded-lg mb-5 inline-block`}>
-                                {methodology.name.replace('_', ' ')}
-                            </div>
-                        )}
-                        <p className="text-gray-200 text-base leading-relaxed">{methodology?.reasoning || 'Methodology reasoning not available.'}</p>
-                    </div>
-                </div>
-
-                {/* â”€â”€â”€ KEY MESSAGES â”€â”€â”€ */}
-                {plan.key_messages?.length > 0 && (
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
-                            Key Campaign Messages
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {plan.key_messages.map((msg: string, i: number) => (
-                                <div key={i} className="bg-gray-800/60 border border-gray-600/40 p-5 rounded-lg">
-                                    <span className="text-indigo-400 text-sm font-bold">Message {i + 1}</span>
-                                    <p className="text-gray-100 text-base mt-2 leading-relaxed">{msg}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* â”€â”€â”€ CHANNEL STRATEGY â”€â”€â”€ */}
-                <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                    <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-6 flex items-center gap-2">
-                        <LayoutDashboard className="w-5 h-5 text-indigo-400" />
-                        Channel Strategy
-                    </h3>
-                    <div className="space-y-6">
-                        {/* Email Channel */}
-                        {channelPlan.email && (
-                            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-600/30">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-blue-500/20 p-2.5 rounded-lg"><Mail className="w-5 h-5 text-blue-400" /></div>
-                                        <div>
-                                            <h4 className="text-white font-semibold text-lg">Email</h4>
-                                            <span className="text-blue-400 text-sm">{channelPlan.email.journey_type?.replace('_', ' ')}</span>
-                                        </div>
-                                    </div>
-                                    <span className="bg-blue-500/20 text-blue-300 text-sm font-bold px-4 py-1.5 rounded-full">{channelPlan.email.total_count} Emails</span>
-                                </div>
-                                <p className="text-gray-200 text-base mb-4 leading-relaxed">{channelPlan.email.rationale}</p>
-                                {channelPlan.email.stages?.length > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {channelPlan.email.stages.map((stage: any, i: number) => (
-                                            <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
-                                                <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-blue-500/30 text-blue-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
-                                                    <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
+                                {persona.pain_points?.length > 0 && (
+                                    <div className="mb-8">
+                                        <h4 className="text-base font-bold text-red-400 uppercase tracking-wider mb-4">Pain Points</h4>
+                                        <div className="space-y-3">
+                                            {persona.pain_points.map((point: string, i: number) => (
+                                                <div key={i} className="flex items-start gap-3">
+                                                    <span className="text-red-400 mt-1 flex-shrink-0 text-xl">•</span>
+                                                    <span className="text-gray-200 text-lg leading-relaxed">{point}</span>
                                                 </div>
-                                                <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* WhatsApp Channel */}
-                        {channelPlan.whatsapp && (
-                            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-600/30">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-green-500/20 p-2.5 rounded-lg"><MessageSquare className="w-5 h-5 text-green-400" /></div>
-                                        <div>
-                                            <h4 className="text-white font-semibold text-lg">WhatsApp</h4>
-                                            <span className="text-green-400 text-sm">{channelPlan.whatsapp.journey_type?.replace('_', ' ')}</span>
-                                        </div>
-                                    </div>
-                                    <span className="bg-green-500/20 text-green-300 text-sm font-bold px-4 py-1.5 rounded-full">{channelPlan.whatsapp.total_count} Messages</span>
-                                </div>
-                                <p className="text-gray-200 text-base mb-4 leading-relaxed">{channelPlan.whatsapp.rationale}</p>
-                                {channelPlan.whatsapp.audience_context && (
-                                    <p className="text-gray-300 text-sm italic mb-4">Audience: {channelPlan.whatsapp.audience_context}</p>
-                                )}
-                                {channelPlan.whatsapp.stages?.length > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {channelPlan.whatsapp.stages.map((stage: any, i: number) => (
-                                            <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
-                                                <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-green-500/30 text-green-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
-                                                    <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
-                                                </div>
-                                                <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Instagram Channel */}
-                        {channelPlan.instagram && (
-                            <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-600/30">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-pink-500/20 p-2.5 rounded-lg"><Instagram className="w-5 h-5 text-pink-400" /></div>
-                                        <div>
-                                            <h4 className="text-white font-semibold text-lg">Instagram</h4>
-                                            <span className="text-pink-400 text-sm">{channelPlan.instagram.journey_type?.replace('_', ' ')}</span>
-                                        </div>
-                                    </div>
-                                    <span className="bg-pink-500/20 text-pink-300 text-sm font-bold px-4 py-1.5 rounded-full">{channelPlan.instagram.total_count} Posts</span>
-                                </div>
-                                <p className="text-gray-200 text-base mb-4 leading-relaxed">{channelPlan.instagram.rationale}</p>
-
-                                {/* Content Mix */}
-                                {channelPlan.instagram.content_mix && (
-                                    <div className="mb-4">
-                                        <h5 className="text-sm text-gray-300 uppercase tracking-wider mb-2 font-semibold">Content Mix</h5>
-                                        <div className="flex flex-wrap gap-2">
-                                            {Object.entries(channelPlan.instagram.content_mix).filter(([, v]) => (v as number) > 0).map(([type, count]) => (
-                                                <span key={type} className="bg-pink-500/15 text-pink-200 text-sm px-3 py-1.5 rounded-full border border-pink-500/25">
-                                                    {type.replace('_', ' ')}: {count as number}
-                                                </span>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                {channelPlan.instagram.stages?.length > 0 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {channelPlan.instagram.stages.map((stage: any, i: number) => (
-                                            <div key={i} className="bg-gray-900/60 p-4 rounded-lg border border-gray-600/30">
-                                                <div className="flex items-center gap-2 mb-1.5">
-                                                    <span className="bg-pink-500/30 text-pink-200 text-xs font-bold px-2 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
-                                                    <span className="text-white text-sm font-semibold">{stage.stage_name}</span>
+                                {persona.motivations?.length > 0 && (
+                                    <div>
+                                        <h4 className="text-base font-bold text-emerald-400 uppercase tracking-wider mb-4">Motivations</h4>
+                                        <div className="space-y-3">
+                                            {persona.motivations.map((motive: string, i: number) => (
+                                                <div key={i} className="flex items-start gap-3">
+                                                    <span className="text-emerald-400 mt-1 flex-shrink-0 text-xl">•</span>
+                                                    <span className="text-gray-200 text-lg leading-relaxed">{motive}</span>
                                                 </div>
-                                                <p className="text-gray-300 text-sm leading-relaxed">{stage.purpose}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* METHODOLOGY */}
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-3 pb-4 border-b border-white/10">
+                                    <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                    Chosen Methodology
+                                </h3>
+                                {methodology?.name && (
+                                    <div className={`bg-gradient-to-r ${gradientClass} text-white text-xl font-bold px-6 py-4 rounded-xl mb-6 shadow-lg inline-block`}>
+                                        {methodology.name.replace('_', ' ')}
+                                    </div>
+                                )}
+                                <p className="text-gray-100 text-lg leading-relaxed">{methodology?.reasoning || 'Methodology reasoning not available.'}</p>
+                            </div>
+                        </div>
+
+                        {/* ─── KEY MESSAGES ─── */}
+                        {plan.key_messages?.length > 0 && (
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-3 pb-4 border-b border-white/10">
+                                    <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
+                                    Key Campaign Messages
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {plan.key_messages.map((msg: string, i: number) => (
+                                        <div key={i} className="bg-gray-950/50 border border-white/5 p-6 rounded-xl hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] transition-shadow duration-300">
+                                            <span className="text-indigo-400 text-base font-bold tracking-wide">Message {i + 1}</span>
+                                            <p className="text-gray-100 text-lg mt-3 leading-relaxed">{msg}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ─── CHANNEL STRATEGY ─── */}
+                        <div className="bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8">
+                            <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-8 flex items-center gap-3 pb-4 border-b border-white/10">
+                                <LayoutDashboard className="w-6 h-6 text-indigo-400" />
+                                Channel Strategy
+                            </h3>
+                            <div className="space-y-8">
+                                {/* Email Channel */}
+                                {channelPlan.email && (
+                                    <div className="bg-gray-950/50 rounded-xl p-8 border border-white/5 hover:-translate-y-1.5 hover:border-indigo-400/60 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:bg-gray-900/80 transition-all duration-500 cursor-default">
+                                        <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-blue-500/20 p-3 rounded-xl"><Mail className="w-6 h-6 text-blue-400" /></div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-xl">Email</h4>
+                                                    <span className="text-blue-400 text-base">{channelPlan.email.journey_type?.replace('_', ' ')}</span>
+                                                </div>
+                                            </div>
+                                            <span className="bg-blue-500/20 text-blue-300 text-base font-bold px-5 py-2 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.2)]">{channelPlan.email.total_count} Emails</span>
+                                        </div>
+                                        <p className="text-gray-100 text-lg mb-6 leading-relaxed">{channelPlan.email.rationale}</p>
+                                        {channelPlan.email.stages?.length > 0 && (
+                                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                                {channelPlan.email.stages.map((stage: any, i: number) => (
+                                                    <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <span className="bg-blue-500/30 text-blue-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
+                                                            <span className="text-white text-base font-bold">{stage.stage_name}</span>
+                                                        </div>
+                                                        <p className="text-gray-300 text-base leading-relaxed">{stage.purpose}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* WhatsApp Channel */}
+                                {channelPlan.whatsapp && (
+                                    <div className="bg-gray-950/50 rounded-xl p-8 border border-white/5 hover:-translate-y-1.5 hover:border-green-400/60 hover:shadow-[0_15px_40px_rgba(34,197,94,0.25)] hover:bg-gray-900/80 transition-all duration-500 cursor-default">
+                                        <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-green-500/20 p-3 rounded-xl"><MessageSquare className="w-6 h-6 text-green-400" /></div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-xl">WhatsApp</h4>
+                                                    <span className="text-green-400 text-base">{channelPlan.whatsapp.journey_type?.replace('_', ' ')}</span>
+                                                </div>
+                                            </div>
+                                            <span className="bg-green-500/20 text-green-300 text-base font-bold px-5 py-2 rounded-full shadow-[0_0_15px_rgba(34,197,94,0.2)]">{channelPlan.whatsapp.total_count} Messages</span>
+                                        </div>
+                                        <p className="text-gray-100 text-lg mb-6 leading-relaxed">{channelPlan.whatsapp.rationale}</p>
+                                        {channelPlan.whatsapp.audience_context && (
+                                            <p className="text-gray-300 text-base italic mb-6">Audience: {channelPlan.whatsapp.audience_context}</p>
+                                        )}
+                                        {channelPlan.whatsapp.stages?.length > 0 && (
+                                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                                {channelPlan.whatsapp.stages.map((stage: any, i: number) => (
+                                                    <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <span className="bg-green-500/30 text-green-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
+                                                            <span className="text-white text-base font-bold">{stage.stage_name}</span>
+                                                        </div>
+                                                        <p className="text-gray-300 text-base leading-relaxed">{stage.purpose}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Instagram Channel */}
+                                {channelPlan.instagram && (
+                                    <div className="bg-gray-950/50 rounded-xl p-8 border border-white/5 hover:-translate-y-1.5 hover:border-pink-400/60 hover:shadow-[0_15px_40px_rgba(236,72,153,0.25)] hover:bg-gray-900/80 transition-all duration-500 cursor-default">
+                                        <div className="flex items-center justify-between mb-6 pb-6 border-b border-white/5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-pink-500/20 p-3 rounded-xl"><Instagram className="w-6 h-6 text-pink-400" /></div>
+                                                <div>
+                                                    <h4 className="text-white font-bold text-xl">Instagram</h4>
+                                                    <span className="text-pink-400 text-base">{channelPlan.instagram.journey_type?.replace('_', ' ')}</span>
+                                                </div>
+                                            </div>
+                                            <span className="bg-pink-500/20 text-pink-300 text-base font-bold px-5 py-2 rounded-full shadow-[0_0_15px_rgba(236,72,153,0.2)]">{channelPlan.instagram.total_count} Posts</span>
+                                        </div>
+                                        <p className="text-gray-100 text-lg mb-6 leading-relaxed">{channelPlan.instagram.rationale}</p>
+
+                                        {/* Content Mix */}
+                                        {channelPlan.instagram.content_mix && (
+                                            <div className="mb-6">
+                                                <h5 className="text-base text-gray-400 uppercase tracking-wider mb-3 font-semibold">Content Mix</h5>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {Object.entries(channelPlan.instagram.content_mix).filter(([, v]) => (v as number) > 0).map(([type, count]) => (
+                                                        <span key={type} className="bg-pink-500/15 text-pink-200 text-base font-semibold px-4 py-1.5 rounded-full border border-pink-500/25">
+                                                            {type.replace('_', ' ')}: {count as number}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {channelPlan.instagram.stages?.length > 0 && (
+                                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                                                {channelPlan.instagram.stages.map((stage: any, i: number) => (
+                                                    <div key={i} className="bg-gray-900/60 p-5 rounded-xl border border-white/5">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <span className="bg-pink-500/30 text-pink-200 text-sm font-bold px-2.5 py-1 rounded">D{stage.day_range?.[0]}–{stage.day_range?.[1]}</span>
+                                                            <span className="text-white text-base font-bold">{stage.stage_name}</span>
+                                                        </div>
+                                                        <p className="text-gray-300 text-base leading-relaxed">{stage.purpose}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ─── TWO COLUMN: BUDGET + OUTCOMES ─── */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Budget Allocation */}
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-3 pb-4 border-b border-white/10">
+                                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Budget Allocation
+                                </h3>
+                                <div className="space-y-6 mb-6">
+                                    {budgetEntries.map((entry, i) => (
+                                        <div key={i}>
+                                            <div className="flex justify-between text-lg mb-2">
+                                                <span className="text-gray-200 capitalize font-medium">{entry.channel.replace('_', ' ')}</span>
+                                                <span className="text-white font-bold">₹{entry.amount.toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="w-full bg-gray-950/50 rounded-full h-3">
+                                                <div
+                                                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                                                    style={{ width: `${(entry.amount / maxBudget) * 100}%` }}
+                                                />
+                                            </div>
+                                            {entry.purpose && <p className="text-gray-400 text-base mt-2">{entry.purpose}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                                {budget.rationale && (
+                                    <p className="text-gray-300 text-base italic border-t border-white/10 pt-6">{budget.rationale}</p>
+                                )}
+                                <div className="mt-6 pt-6 border-t border-white/10">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-gray-200 text-lg font-bold uppercase tracking-wide">Total</span>
+                                        <span className="text-white font-bold text-2xl">₹{(budget.total || campaign.budget).toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Expected Outcomes */}
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-lg font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-3 pb-4 border-b border-white/10">
+                                    <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                                    Expected Outcomes
+                                </h3>
+                                {outcomes.primary_kpi && (
+                                    <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-6 mb-6 shadow-[0_4px_15px_rgba(245,158,11,0.1)]">
+                                        <span className="text-amber-400 text-base font-bold uppercase tracking-wider block mb-2">Primary KPI</span>
+                                        <p className="text-white font-bold text-xl">{outcomes.primary_kpi}</p>
+                                    </div>
+                                )}
+                                {outcomes.secondary_kpis?.length > 0 && (
+                                    <div className="space-y-4 mb-6">
+                                        <h4 className="text-base text-gray-400 uppercase tracking-wider font-semibold mb-3">Secondary KPIs</h4>
+                                        {outcomes.secondary_kpis.map((kpi: string, i: number) => (
+                                            <div key={i} className="flex items-center gap-3">
+                                                <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                                                <span className="text-gray-100 text-lg">{kpi}</span>
                                             </div>
                                         ))}
                                     </div>
                                 )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* â”€â”€â”€ TWO COLUMN: BUDGET + OUTCOMES â”€â”€â”€ */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Budget Allocation */}
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                            Budget Allocation
-                        </h3>
-                        <div className="space-y-4 mb-4">
-                            {budgetEntries.map((entry, i) => (
-                                <div key={i}>
-                                    <div className="flex justify-between text-base mb-1.5">
-                                        <span className="text-gray-200 capitalize font-medium">{entry.channel.replace('_', ' ')}</span>
-                                        <span className="text-white font-bold">₹{entry.amount.toLocaleString('en-IN')}</span>
+                                {outcomes.success_criteria && (
+                                    <div className="border-t border-white/10 pt-6">
+                                        <h4 className="text-base text-gray-400 uppercase tracking-wider mb-3 font-semibold">Success Criteria</h4>
+                                        <p className="text-gray-200 text-lg leading-relaxed">{outcomes.success_criteria}</p>
                                     </div>
-                                    <div className="w-full bg-gray-800 rounded-full h-2.5">
-                                        <div
-                                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-500"
-                                            style={{ width: `${(entry.amount / maxBudget) * 100}%` }}
-                                        />
+                                )}
+                                {/* Fallback for old strategy format */}
+                                {!outcomes.primary_kpi && outcomes.reach && (
+                                    <div className="space-y-4">
+                                        <div><span className="text-gray-400 text-base uppercase font-semibold">Reach:</span><p className="text-gray-100 text-lg">{outcomes.reach}</p></div>
+                                        {outcomes.engagement_rate && <div><span className="text-gray-400 text-base uppercase font-semibold">Engagement:</span><p className="text-gray-100 text-lg">{outcomes.engagement_rate}</p></div>}
+                                        {outcomes.conversion_estimate && <div><span className="text-gray-300 text-sm uppercase font-semibold">Conversion:</span><p className="text-gray-200 text-base">{outcomes.conversion_estimate}</p></div>}
                                     </div>
-                                    {entry.purpose && <p className="text-gray-400 text-sm mt-1">{entry.purpose}</p>}
-                                </div>
-                            ))}
-                        </div>
-                        {budget.rationale && (
-                            <p className="text-gray-400 text-sm italic border-t border-gray-700 pt-4">{budget.rationale}</p>
-                        )}
-                        <div className="mt-4 pt-4 border-t border-gray-700">
-                            <div className="flex justify-between">
-                                <span className="text-gray-200 text-base font-semibold">Total</span>
-                                <span className="text-white font-bold text-lg">₹{(budget.total || campaign.budget).toLocaleString('en-IN')}</span>
+                                )}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Expected Outcomes */}
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                            Expected Outcomes
-                        </h3>
-                        {outcomes.primary_kpi && (
-                            <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg p-5 mb-5">
-                                <span className="text-amber-400 text-sm font-bold uppercase tracking-wider">Primary KPI</span>
-                                <p className="text-white font-semibold text-lg mt-1">{outcomes.primary_kpi}</p>
-                            </div>
-                        )}
-                        {outcomes.secondary_kpis?.length > 0 && (
-                            <div className="space-y-3 mb-5">
-                                <h4 className="text-sm text-gray-300 uppercase tracking-wider font-semibold">Secondary KPIs</h4>
-                                {outcomes.secondary_kpis.map((kpi: string, i: number) => (
-                                    <div key={i} className="flex items-center gap-2.5">
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                                        <span className="text-gray-200 text-base">{kpi}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        {outcomes.success_criteria && (
-                            <div className="border-t border-gray-700 pt-4">
-                                <h4 className="text-sm text-gray-300 uppercase tracking-wider mb-2 font-semibold">Success Criteria</h4>
-                                <p className="text-gray-200 text-base leading-relaxed">{outcomes.success_criteria}</p>
-                            </div>
-                        )}
-                        {/* Fallback for old strategy format */}
-                        {!outcomes.primary_kpi && outcomes.reach && (
-                            <div className="space-y-3">
-                                <div><span className="text-gray-300 text-sm uppercase font-semibold">Reach:</span><p className="text-gray-200 text-base">{outcomes.reach}</p></div>
-                                {outcomes.engagement_rate && <div><span className="text-gray-300 text-sm uppercase font-semibold">Engagement:</span><p className="text-gray-200 text-base">{outcomes.engagement_rate}</p></div>}
-                                {outcomes.conversion_estimate && <div><span className="text-gray-300 text-sm uppercase font-semibold">Conversion:</span><p className="text-gray-200 text-base">{outcomes.conversion_estimate}</p></div>}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                        {/* ─── WEEKLY PLAN TIMELINE ─── */}
+                        {plan.weekly_plan?.length > 0 && (
+                            <div className="group/section bg-gray-900/40 backdrop-blur-sm border border-white/5 shadow-[0_4px_24px_rgba(0,0,0,0.4)] rounded-2xl p-8 hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 cursor-default">
+                                <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-6 flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    Campaign Timeline
+                                </h3>
+                                <div className="space-y-8">
+                                    {plan.weekly_plan.map((week: any, wIdx: number) => (
+                                        <div key={wIdx} className="relative">
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <div className="bg-indigo-500/20 text-indigo-300 text-sm font-bold px-4 py-2 rounded-lg">
+                                                    Week {week.week}
+                                                </div>
+                                                <div>
+                                                    <span className="text-white text-base font-semibold">{week.theme}</span>
+                                                    {week.days_covered && <span className="text-gray-400 text-sm ml-2">({week.days_covered})</span>}
+                                                </div>
+                                            </div>
+                                            <p className="text-gray-300 text-sm mb-4 ml-1">{week.goal}</p>
 
-                {/* â”€â”€â”€ WEEKLY PLAN TIMELINE â”€â”€â”€ */}
-                {plan.weekly_plan?.length > 0 && (
-                    <div className="bg-gray-900 border border-gray-700/50 rounded-xl p-7">
-                        <h3 className="text-base font-bold text-gray-100 uppercase tracking-wider mb-6 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                            Campaign Timeline
-                        </h3>
-                        <div className="space-y-8">
-                            {plan.weekly_plan.map((week: any, wIdx: number) => (
-                                <div key={wIdx} className="relative">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="bg-indigo-500/20 text-indigo-300 text-sm font-bold px-4 py-2 rounded-lg">
-                                            Week {week.week}
-                                        </div>
-                                        <div>
-                                            <span className="text-white text-base font-semibold">{week.theme}</span>
-                                            {week.days_covered && <span className="text-gray-400 text-sm ml-2">({week.days_covered})</span>}
-                                        </div>
-                                    </div>
-                                    <p className="text-gray-300 text-sm mb-4 ml-1">{week.goal}</p>
-
-                                    {week.tactics?.length > 0 && (
-                                        <div className="ml-5 border-l-2 border-gray-700 pl-5 space-y-3">
-                                            {week.tactics.map((tactic: any, tIdx: number) => {
-                                                const channelColor = tactic.channel === 'email' ? 'bg-blue-400'
-                                                    : tactic.channel === 'whatsapp' ? 'bg-green-400'
-                                                        : tactic.channel === 'instagram' ? 'bg-pink-400'
-                                                            : 'bg-gray-400';
-                                                return (
-                                                    <div key={tIdx} className="relative flex items-start gap-3">
-                                                        <div className={`absolute -left-[25px] top-2 w-3 h-3 rounded-full ${channelColor}`}></div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className="flex items-center gap-2.5 flex-wrap">
-                                                                <span className="text-gray-400 text-sm font-mono">Day {tactic.day}</span>
-                                                                <span className={`text-sm font-semibold capitalize ${tactic.channel === 'email' ? 'text-blue-400' : tactic.channel === 'whatsapp' ? 'text-green-400' : 'text-pink-400'}`}>
-                                                                    {tactic.channel}
-                                                                </span>
-                                                                <span className="text-white text-sm">{tactic.action}</span>
+                                            {week.tactics?.length > 0 && (
+                                                <div className="ml-5 border-l-2 border-gray-700 pl-5 space-y-3">
+                                                    {week.tactics.map((tactic: any, tIdx: number) => {
+                                                        const channelColor = tactic.channel === 'email' ? 'bg-blue-400'
+                                                            : tactic.channel === 'whatsapp' ? 'bg-green-400'
+                                                                : tactic.channel === 'instagram' ? 'bg-pink-400'
+                                                                    : 'bg-gray-400';
+                                                        return (
+                                                            <div key={tIdx} className="relative flex items-start gap-3">
+                                                                <div className={`absolute -left-[25px] top-2 w-3 h-3 rounded-full ${channelColor}`}></div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center gap-2.5 flex-wrap">
+                                                                        <span className="text-gray-400 text-sm font-mono">Day {tactic.day}</span>
+                                                                        <span className={`text-sm font-semibold capitalize ${tactic.channel === 'email' ? 'text-blue-400' : tactic.channel === 'whatsapp' ? 'text-green-400' : 'text-pink-400'}`}>
+                                                                            {tactic.channel}
+                                                                        </span>
+                                                                        <span className="text-white text-sm">{tactic.action}</span>
+                                                                    </div>
+                                                                    <p className="text-gray-400 text-sm mt-1">{tactic.description}</p>
+                                                                </div>
                                                             </div>
-                                                            <p className="text-gray-400 text-sm mt-1">{tactic.description}</p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
+                        )}
+
+                        {/* â”€â”€â”€ EXPORT BUTTON â”€â”€â”€ */}
+                        <div className="flex justify-center pt-4">
+                            <Button
+                                variant="outline"
+                                className="text-gray-300 border-gray-600 hover:bg-gray-800 hover:text-white px-8 py-3 text-base"
+                                onClick={handlePDFExport}
+                            >
+                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Export Strategy as PDF
+                            </Button>
                         </div>
                     </div>
-                )}
-
-                {/* â”€â”€â”€ EXPORT BUTTON â”€â”€â”€ */}
-                <div className="flex justify-center pt-4">
-                    <Button
-                        variant="outline"
-                        className="text-gray-300 border-gray-600 hover:bg-gray-800 hover:text-white px-8 py-3 text-base"
-                        onClick={handlePDFExport}
-                    >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        Export Strategy as PDF
-                    </Button>
                 </div>
             </div>
         );
@@ -875,17 +880,17 @@ export const Dashboard: React.FC = () => {
     const renderEmails = () => (
         <div className="grid gap-4 animate-in fade-in">
             {emails.map((email) => (
-                <div key={email.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <div key={email.id} className="bg-white/5 backdrop-blur-md rounded-xl overflow-hidden shadow-sm border border-white/10 hover:bg-white/10 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] hover:-translate-y-1 transition-all duration-300 group">
+                    <div className="bg-white/5 px-6 py-4 border-b border-white/10 flex justify-between items-center">
                         <div>
-                            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mr-3">Day {email.scheduled_day}</span>
-                            <span className="text-gray-900 font-semibold">{email.subject}</span>
+                            <span className="bg-amber-500/10 text-amber-500 text-xs font-bold px-2 py-1 rounded mr-3 border border-amber-500/20">Day {email.scheduled_day}</span>
+                            <span className="text-gray-100 font-semibold">{email.subject}</span>
                         </div>
                         <div className="flex gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 border-indigo-300 font-medium shadow-sm"
+                                className="bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/30 font-medium shadow-sm group-hover:bg-indigo-500/20"
                                 onClick={() => handleSendTest(email.id, 'email', email)}
                                 disabled={sendingTest === email.id}
                             >
@@ -895,15 +900,15 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
                     <div className="p-6">
-                        <div className="text-xs text-gray-500 mb-4 bg-gray-50 inline-block px-2 py-1 rounded border border-gray-200">
-                            <strong>Preview:</strong> {email.pre_header}
+                        <div className="text-xs text-gray-300 mb-4 bg-white/5 inline-block px-3 py-1.5 rounded border border-white/10">
+                            <strong className="text-white">Preview:</strong> {email.pre_header}
                         </div>
                         <div
-                            className="prose prose-sm max-w-none text-gray-600 bg-gray-50/50 p-4 rounded-lg border border-gray-100"
+                            className="prose prose-sm prose-invert max-w-none text-gray-200 bg-transparent p-5 rounded-lg border border-white/10 leading-relaxed"
                             dangerouslySetInnerHTML={{ __html: email.body }}
                         />
                         <div className="mt-4 flex justify-end">
-                            <span className="text-xs text-gray-400 italic">CTA: {email.cta_text}</span>
+                            <span className="text-xs text-gray-400 italic bg-white/5 px-2 py-1 rounded">CTA: {email.cta_text}</span>
                         </div>
                     </div>
                 </div>
@@ -914,35 +919,35 @@ export const Dashboard: React.FC = () => {
     const renderWhatsApp = () => (
         <div className="space-y-6 max-w-2xl mx-auto animate-in fade-in py-4">
             {whatsappMessages.map((msg) => (
-                <div key={msg.id} className="relative group">
-                    <div className="flex justify-center mb-4">
-                        <span className="bg-gray-800 text-gray-400 text-[10px] px-3 py-1 rounded-full uppercase tracking-wider">
+                <div key={msg.id} className="relative group bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-5 hover:bg-white/10 hover:border-green-500/50 hover:shadow-[0_0_20px_rgba(34,197,94,0.15)] hover:-translate-y-1 transition-all duration-300">
+                    <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
+                        <span className="bg-green-500/10 text-green-500 border border-green-500/20 text-[10px] px-3 py-1 rounded-full uppercase tracking-wider font-bold">
                             Day {msg.scheduled_day}
                         </span>
+                        <span className="text-[10px] text-gray-500 uppercase font-medium">{msg.message_type}</span>
                     </div>
 
-                    <div className="flex items-end justify-end">
-                        <div className="flex flex-col gap-1 items-end max-w-[80%]">
-                            <div className="bg-[#005c4b] text-white p-3 rounded-lg rounded-tr-none shadow-md text-sm leading-relaxed relative text-left">
+                    <div className="flex items-end justify-center w-full">
+                        <div className="flex flex-col gap-1 items-end w-full">
+                            <div className="bg-[#005c4b] text-white p-4 rounded-xl rounded-tr-sm shadow-md text-sm leading-relaxed relative text-left w-full sm:w-[85%] ml-auto">
                                 {msg.message_text}
-                                <div className="text-[10px] text-gray-300 text-right mt-1 flex items-center justify-end gap-1">
+                                <div className="text-[10px] text-green-200/70 text-right mt-2 flex items-center justify-end gap-1">
                                     <span>10:00 AM</span>
                                     <CheckCircle2 className="w-3 h-3 text-blue-400" />
                                 </div>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-gray-500 hover:text-green-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleSendTest(msg.id, 'whatsapp', msg)}
-                                disabled={sendingTest === msg.id}
-                            >
-                                <Send className="w-3 h-3 mr-1" /> Send Test
-                            </Button>
+                            <div className="w-full flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-indigo-500/10 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 text-xs"
+                                    onClick={() => handleSendTest(msg.id, 'whatsapp', msg)}
+                                    disabled={sendingTest === msg.id}
+                                >
+                                    <Send className="w-3 h-3 mr-1" /> {sendingTest === msg.id ? 'Sending...' : 'Send Test Msg'}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
-                    <div className="text-right mt-1 mr-1">
-                        <span className="text-[10px] text-gray-500 uppercase">{msg.message_type}</span>
                     </div>
                 </div>
             ))}
@@ -988,16 +993,17 @@ export const Dashboard: React.FC = () => {
         );
     };
 
-    const renderVoiceAgent = () => (
-        <div className="flex flex-col items-center justify-center p-12 bg-gray-900 rounded-xl border border-gray-800 text-center mb-8">
-            <div className="w-16 h-16 bg-indigo-500/10 rounded-full flex items-center justify-center mb-6">
-                <Mic className="w-8 h-8 text-indigo-400" />
+    const renderVideoAdsPlaceholder = () => (
+        <div className="flex flex-col items-center justify-center p-12 bg-gray-900 rounded-xl border border-gray-800 text-center mb-8 shadow-[0_0_30px_rgba(255,122,0,0.15)] relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#FF7A00]/5 to-purple-500/5 blur-2xl z-0 group-hover:from-[#FF7A00]/10 transition-all duration-700"></div>
+            <div className="w-16 h-16 bg-[#FF7A00]/10 border border-[#FF7A00]/30 rounded-full flex items-center justify-center mb-6 z-10 box-shadow-[0_0_15px_rgba(255,122,0,0.4)]">
+                <Video className="w-8 h-8 text-[#FF7A00]" />
             </div>
-            <h3 className="text-white font-medium text-lg mb-2">Voice Agent Setup</h3>
-            <p className="text-gray-400 max-w-md mb-6">
-                Coming in Session 4: Configure an AI voice agent to handle inbound leads from your campaign.
+            <h3 className="text-white font-bold text-2xl mb-3 z-10">Video Advertisements</h3>
+            <p className="text-gray-300 max-w-md mb-8 z-10 text-lg">
+                Coming soon. Be ready for the awesomeness! ✨
             </p>
-            <Button variant="outline" disabled>Coming Soon</Button>
+            <Button variant="outline" disabled className="z-10 border-[#FF7A00]/50 text-[#FF7A00] bg-[#FF7A00]/5">In Development</Button>
         </div>
     );
 
@@ -1011,12 +1017,12 @@ export const Dashboard: React.FC = () => {
         { id: 'social', label: 'Instagram', icon: Instagram, show: campaign.recommended_channels.includes('instagram') },
         { id: 'video_ad', label: 'Video Ad', icon: Video, show: campaign.recommended_channels.includes('video_ad') },
         { id: 'execution_log', label: 'Execution Log', icon: LayoutDashboard, show: true }, // Always show log
-        { id: 'voice_agent', label: 'Voice Agent', icon: Mic, show: true }
+        { id: 'video_ads_placeholder', label: 'Video Advertisements', icon: Video, show: true }
     ];
 
     return (
         <Layout>
-            <div className="min-h-screen bg-black text-white">
+            <div className="min-h-screen bg-transparent text-white">
                 {/* Navbar Area */}
                 <div className="sticky top-0 z-30 bg-black/80 backdrop-blur-md border-b border-gray-800 px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -1037,9 +1043,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="text-sm text-gray-500 mr-4 hidden md:block">
-                            Budget: â‚¹{campaign.budget.toLocaleString()}
-                        </div>
+                        {/* Header controls removed Budget display */}
 
                         {/* Status Actions */}
                         {isLive && (
@@ -1066,7 +1070,7 @@ export const Dashboard: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] h-[calc(100vh-73px)] overflow-hidden">
 
                     {/* LEFT PANEL - SCROLLABLE */}
-                    <div className="border-r border-gray-800 bg-gray-950 overflow-y-auto p-6 custom-scrollbar">
+                    <div className="border-r border-gray-800 bg-transparent overflow-y-auto p-6 custom-scrollbar">
                         <div className="mb-8">
                             <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Campaign Video</h3>
                             <VideoPlayer
@@ -1119,10 +1123,10 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* RIGHT PANEL - MAIN CONTENT */}
-                    <div className="flex flex-col h-full bg-black overflow-hidden">
+                    <div className="flex flex-col h-full bg-transparent overflow-hidden relative">
 
                         {/* Tabs */}
-                        <div className="flex overflow-x-auto border-b border-gray-800 bg-gray-950/50 px-6">
+                        <div className="flex overflow-x-auto border-b border-gray-800 bg-transparent px-6 relative z-10">
                             {tabs.map(tab => {
                                 if (tab.show === false) return null;
                                 const Icon = tab.icon;
@@ -1130,9 +1134,16 @@ export const Dashboard: React.FC = () => {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
-                                            ? 'border-indigo-500 text-indigo-400 bg-indigo-500/5'
-                                            : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-gray-900'
+                                        className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all duration-300 whitespace-nowrap relative ${activeTab === tab.id
+                                            ? tab.id === 'overview' ? 'border-purple-500 text-purple-400 bg-purple-500/10 shadow-[inset_0_-2px_10px_rgba(168,85,247,0.2),0_15px_30px_-5px_rgba(168,85,247,0.25)]'
+                                                : tab.id === 'emails' ? 'border-amber-500 text-amber-400 bg-amber-500/10 shadow-[inset_0_-2px_10px_rgba(245,158,11,0.2),0_15px_30px_-5px_rgba(245,158,11,0.25)]'
+                                                    : tab.id === 'whatsapp' ? 'border-green-500 text-green-400 bg-green-500/10 shadow-[inset_0_-2px_10px_rgba(34,197,94,0.2),0_15px_30px_-5px_rgba(34,197,94,0.25)]'
+                                                        : tab.id === 'social' ? 'border-pink-500 text-pink-400 bg-gradient-to-t from-pink-500/10 to-transparent shadow-[inset_0_-2px_10px_rgba(236,72,153,0.3),0_15px_30px_-5px_rgba(236,72,153,0.25)]'
+                                                            : tab.id === 'execution_log' ? 'border-cyan-500 text-cyan-400 bg-cyan-500/10 shadow-[inset_0_-2px_10px_rgba(6,182,212,0.2),0_15px_30px_-5px_rgba(6,182,212,0.25)]'
+                                                                : tab.id === 'video_ads_placeholder' ? 'border-[#FF7A00] text-[#FF7A00] bg-[#FF7A00]/10 shadow-[inset_0_-2px_10px_rgba(255,122,0,0.2),0_15px_30px_-5px_rgba(255,122,0,0.25)]'
+                                                                    : tab.id === 'campaign_live' ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10 shadow-[inset_0_-2px_10px_rgba(16,185,129,0.2),0_15px_30px_-5px_rgba(16,185,129,0.25)]'
+                                                                        : 'border-indigo-500 text-indigo-400 bg-indigo-500/10 shadow-[inset_0_-2px_10px_rgba(99,102,241,0.2),0_15px_30px_-5px_rgba(99,102,241,0.25)]'
+                                            : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-gray-900/50'
                                             }`}
                                     >
                                         <Icon className="w-4 h-4" /> {tab.label}
@@ -1182,7 +1193,7 @@ export const Dashboard: React.FC = () => {
                                 {activeTab === 'whatsapp' && <div className="animate-fade-in">{renderWhatsApp()}</div>}
                                 {activeTab === 'social' && <div className="animate-fade-in">{renderSocial()}</div>}
                                 {activeTab === 'video_ad' && <div className="animate-fade-in">{renderVideoAd()}</div>}
-                                {activeTab === 'voice_agent' && <div className="animate-fade-in">{renderVoiceAgent()}</div>}
+                                {activeTab === 'video_ads_placeholder' && <div className="animate-fade-in">{renderVideoAdsPlaceholder()}</div>}
                                 {activeTab === 'execution_log' && <div className="animate-fade-in"><ExecutionLog campaignId={campaign.id} /></div>}
                             </div>
                         </div>

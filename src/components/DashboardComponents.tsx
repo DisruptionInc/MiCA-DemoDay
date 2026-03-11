@@ -131,7 +131,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerate
     const [expanded, setExpanded] = React.useState(false);
 
     return (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-gray-700 transition-colors">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-pink-500/50 hover:shadow-[0_0_20px_rgba(236,72,153,0.15)] hover:-translate-y-1 transition-all duration-300 group/card">
             {/* Image Area */}
             <div className="aspect-square bg-gray-950 relative group">
                 {post.image_url && !imageError ? (

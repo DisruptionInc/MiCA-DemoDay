@@ -2,7 +2,7 @@ import React from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'brand' | 'custom';
     size?: 'sm' | 'md' | 'lg';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -28,6 +28,8 @@ export const Button: React.FC<ButtonProps> = ({
         outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-800',
         ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
         danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+        brand: 'bg-[#FF7A00] text-white hover:bg-[#FF8800] focus:ring-[#FF7A00]',
+        custom: '', // Allows purely overriding via className without base color conflicts
     };
 
     const sizes = {
