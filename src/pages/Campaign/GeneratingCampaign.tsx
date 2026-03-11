@@ -11,6 +11,7 @@ import { generateVideo } from '../../services/videoService';
 import { HEYGEN_CONFIG } from '../../config/heygen';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
 import MiCALogo from '../../components/MiCALogo';
+import { useAnimationContext } from '../../context/AnimationContext';
 
 interface Campaign {
     id: string;
@@ -45,6 +46,36 @@ export const GeneratingCampaign: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [progressText, setProgressText] = useState("");
     const generationStartedRef = useRef(false);
+
+    // Global Animation State Context
+    const { setMode, setGenerationProgress, setGazeTarget } = useAnimationContext();
+
+    // Refs for step DOM elements so the Eyeball can look at them
+    const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    useEffect(() => {
+        setMode('generating');
+        return () => {
+            setMode('idle');
+            setGenerationProgress(0);
+            setGazeTarget(null);
+        };
+    }, [setMode, setGenerationProgress, setGazeTarget]);
+
+    // Update Eyeball progress and gaze whenever currentStep changes
+    useEffect(() => {
+        // Calculate progress (0 to 1)
+        const progress = Math.min((currentStep + 1) / STEPS.length, 1);
+        setGenerationProgress(progress);
+
+        // Calculate DOM position of current step for Eyeball to look at
+        const stepEl = stepRefs.current[currentStep];
+        if (stepEl) {
+            const rect = stepEl.getBoundingClientRect();
+            // Point roughly at the center-left of the step element
+            setGazeTarget({ x: rect.left + 50, y: rect.top + rect.height / 2 });
+        }
+    }, [currentStep, setGenerationProgress, setGazeTarget]);
 
     useEffect(() => {
         fetchCampaign();
@@ -137,7 +168,7 @@ export const GeneratingCampaign: React.FC = () => {
         // Done
         setTimeout(() => {
             navigate(`/campaign/${DEMO_CAMPAIGN.id}/dashboard`);
-        }, 1000);
+        }, 800);
     };
 
     // --- PRE-PROCESSING: Build rich context before any AI calls ---
@@ -254,7 +285,7 @@ export const GeneratingCampaign: React.FC = () => {
             // Done!
             setTimeout(() => {
                 navigate(`/campaign/${campaignData.id}/dashboard`);
-            }, 1000);
+            }, 800);
 
         } catch (err: any) {
             console.error("Generation Sequence Error:", err);
@@ -754,7 +785,7 @@ Rules:
                             // const isPending = !isCompleted && !isCurrent;
 
                             return (
-                                <div key={step.id} className="flex items-center gap-4 transition-all duration-500">
+                                <div key={step.id} ref={el => { stepRefs.current[index] = el; }} className="flex items-center gap-4 transition-all duration-500">
                                     <div className="flex-shrink-0">
                                         {isCompleted ? (
                                             <CheckCircle2 className="w-6 h-6 text-green-500 animate-in zoom-in" />

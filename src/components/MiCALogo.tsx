@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimationContext } from '../context/AnimationContext';
 import EyeCharacter from './EyeCharacter';
 
 /**
@@ -30,10 +31,21 @@ export default function MiCALogo({ variant = 'hero' }: { variant?: 'hero' | 'hea
   // Which letter index is currently being hovered
   const [hoveredIdx, setHoveredIdx] = useState(-1);
 
+  const { mode } = useAnimationContext();
+
   // The index to actually display (hover takes precedence)
-  const displayIdx = hoveredIdx !== -1 ? hoveredIdx : expandedIdx;
+  // Force collapse (-1) during generating, launching, or error modes
+  const displayIdx = (mode !== 'idle') ? -1 : (hoveredIdx !== -1 ? hoveredIdx : expandedIdx);
 
   useEffect(() => {
+    // Stop auto-expansion if we are animating a state
+    if (mode !== 'idle') {
+      setExpandedIdx(-1);
+      return;
+    }
+
+    let tOut: ReturnType<typeof setTimeout>;
+
     const cycle = () => {
       // Pick a random letter to expand
       const idx = Math.floor(Math.random() * LETTERS.length);
@@ -45,19 +57,68 @@ export default function MiCALogo({ variant = 'hero' }: { variant?: 'hero' | 'hea
       }, 2500);
 
       // Schedule the next expansion 5-10s later
-      setTimeout(cycle, 5000 + Math.random() * 5000);
+      tOut = setTimeout(cycle, 5000 + Math.random() * 5000);
     };
 
     // First expansion after 3s
-    const t = setTimeout(cycle, 3000);
-    return () => clearTimeout(t);
-  }, []);
+    tOut = setTimeout(cycle, 3000);
+    return () => clearTimeout(tOut);
+  }, [mode]);
 
   const isHeader = variant === 'header';
   const mainFont = isHeader ? 'clamp(40px, 5vw, 60px)' : 'clamp(90px, 11vw, 140px)';
   const lowerFont = isHeader ? 'clamp(30px, 4vw, 48px)' : 'clamp(70px, 8vw, 110px)';
   const expandFont = isHeader ? 'clamp(14px, 1.5vw, 20px)' : 'clamp(28px, 3vw, 42px)';
   const eyeSize = isHeader ? 40 : 90;
+
+  // Animation variants based on mode
+  const getVariants = () => {
+    if (mode === 'generating') {
+      return {
+        animate: {
+          textShadow: [
+            "0 0 10px rgba(255,122,0,0.5)",
+            "0 0 30px rgba(255,122,0,1)",
+            "0 0 10px rgba(255,122,0,0.5)"
+          ],
+          transition: { duration: 2, repeat: Infinity, ease: "easeInOut" as const }
+        }
+      };
+    }
+    if (mode === 'launching') {
+      return {
+        animate: {
+          color: ["#FF7A00", "#FFFFFF", "#FF7A00"],
+          textShadow: [
+            "0 0 10px rgba(255,122,0,0)",
+            "0 0 50px rgba(255,255,255,1)",
+            "0 0 10px rgba(255,122,0,0)"
+          ],
+          scale: [1, 1.05, 1],
+          transition: { duration: 1, ease: "easeOut" as const }
+        }
+      };
+    }
+    if (mode === 'error') {
+      return {
+        animate: {
+          color: ["#FF7A00", "#FF3B30", "#FF7A00", "#FF3B30", "#FF7A00"],
+          textShadow: [
+            "0 0 10px rgba(255,0,0,0)",
+            "0 0 20px rgba(255,0,0,0.8)",
+            "0 0 10px rgba(255,0,0,0)",
+            "0 0 20px rgba(255,0,0,0.8)",
+            "0 0 10px rgba(255,0,0,0)"
+          ],
+          x: [-2, 2, -2, 2, 0],
+          transition: { duration: 0.4, ease: "linear" as const }
+        }
+      };
+    }
+    return { animate: {} };
+  };
+
+  const variants = getVariants();
 
   return (
     <div className={`flex items-baseline gap-0 select-none ${isHeader ? 'mb-4' : ''}`} style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -69,8 +130,9 @@ export default function MiCALogo({ variant = 'hero' }: { variant?: 'hero' | 'hea
           onMouseLeave={() => setHoveredIdx(-1)}
         >
           {/* The bold letter */}
-          <span
+          <motion.span
             className="font-black text-[#FF7A00] text-glow relative inline-block"
+            animate={variants.animate}
             style={{
               fontSize: mainFont,
               lineHeight: 1,
@@ -90,7 +152,7 @@ export default function MiCALogo({ variant = 'hero' }: { variant?: 'hero' | 'hea
             ) : (
               letter.char
             )}
-          </span>
+          </motion.span>
 
           {/* The expanding full word */}
           <AnimatePresence>

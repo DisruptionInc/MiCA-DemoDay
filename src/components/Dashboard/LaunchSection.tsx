@@ -4,6 +4,7 @@ import Papa from 'papaparse';
 import { Button } from '../ui/Button';
 import { supabase } from '../../lib/supabase';
 import { generateExecutionSchedule, triggerWebhook } from '../../services/executionService';
+import { useAnimationContext } from '../../context/AnimationContext';
 
 interface LaunchSectionProps {
     campaignId: string;
@@ -32,29 +33,44 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     const [isUploading, setIsUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const { setMode } = useAnimationContext();
 
     const handleLaunch = async () => {
         setIsLaunching(true);
         setError(null);
+        setMode('launching'); // Trigger eyeball rocket sequence
+        
         try {
+            // Blastoff animates for exactly ~3.4s before exiting frame.
+            const blastoffWait = new Promise(resolve => setTimeout(resolve, 3400));
+            
             if (campaignId.startsWith('demo-')) {
-                // Simulate launch latency
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await blastoffWait;
             } else {
-                await generateExecutionSchedule(campaignId);
-                await triggerWebhook('campaign_launched', {
-                    campaign_id: campaignId,
-                    action: 'campaign_launched',
-                    start_date: new Date().toISOString()
-                });
+                await Promise.all([
+                    generateExecutionSchedule(campaignId).then(() => 
+                        triggerWebhook('campaign_launched', {
+                            campaign_id: campaignId,
+                            action: 'campaign_launched',
+                            start_date: new Date().toISOString()
+                        })
+                    ),
+                    blastoffWait
+                ]);
             }
+
+            // Rocket is off-screen. Switch page now!
             onLaunchComplete();
             setShowConfirm(false);
+
+            // Wait for crash down & giggle animation to complete BEFORE setting mode 'idle'
+            await new Promise(resolve => setTimeout(resolve, 2400));
         } catch (err: any) {
             console.error("Launch failed:", err);
             setError(err.message || 'Failed to launch campaign');
         } finally {
             setIsLaunching(false);
+            setMode('idle'); // Reset mode
         }
     };
 

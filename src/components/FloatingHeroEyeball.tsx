@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSpring, motion } from 'framer-motion';
+import { useAnimationContext } from '../context/AnimationContext';
 import EyeCharacter from './EyeCharacter';
 
 interface Props {
@@ -17,9 +18,36 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
   // Is it currently chasing the mouse?
   const isChasingRef = useRef(false);
 
+  const { mode, gazeTarget } = useAnimationContext();
+
+  const modeRef = useRef(mode);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
   // Smoother, floaty ease-in/ease-out spring physics
-  const springX = useSpring(targetPos.x, { stiffness: 40, damping: 20, mass: 1.5 });
-  const springY = useSpring(targetPos.y, { stiffness: 40, damping: 20, mass: 1.5 });
+  // Snap faster for generating, softer for launching so it's not too abrupt
+  const getStiffness = () => {
+    if (mode === 'generating') return 120;
+    if (mode === 'launching') return 60;
+    return 40;
+  };
+  const getDamping = () => {
+    if (mode === 'generating') return 14;
+    if (mode === 'launching') return 18;
+    return 20;
+  };
+
+  const springX = useSpring(targetPos.x, { 
+    stiffness: getStiffness(), 
+    damping: getDamping(), 
+    mass: 1.5 
+  });
+  const springY = useSpring(targetPos.y, { 
+    stiffness: getStiffness(), 
+    damping: getDamping(), 
+    mass: 1.5 
+  });
 
   useEffect(() => {
     springX.set(targetPos.x);
@@ -81,19 +109,41 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
     };
 
     // Pick a new target every 3 to 6 seconds
+    let activeTimeout: ReturnType<typeof setTimeout>;
+    
     const intervalCycle = () => {
-      pickNewTarget();
-      setTimeout(intervalCycle, 3000 + Math.random() * 3000);
+      // Pick a new target if idle, otherwise wait
+      if (modeRef.current === 'idle') {
+        pickNewTarget();
+      }
+      activeTimeout = setTimeout(intervalCycle, 3000 + Math.random() * 3000);
     };
 
     // Start cycle
-    const t = setTimeout(intervalCycle, 2000);
+    activeTimeout = setTimeout(intervalCycle, 2000);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      clearTimeout(t);
+      clearTimeout(activeTimeout);
     };
   }, []);
+
+  // Jump to specific coordinates depending on the mode
+  useEffect(() => {
+    if (mode === 'generating' && gazeTarget) {
+      // Position eyeball to the right of the target text (approx 300px offset)
+      setTargetPos({ 
+        x: gazeTarget.x + (typeof window !== 'undefined' ? 300 : 0), 
+        y: gazeTarget.y 
+      });
+    } else if (mode === 'launching') {
+      // Move exactly to bottom-center of the screen before the rocket arrives
+      setTargetPos({
+        x: typeof window !== 'undefined' ? window.innerWidth / 2 : 800,
+        y: typeof window !== 'undefined' ? window.innerHeight * 0.66 : 600
+      });
+    }
+  }, [mode, gazeTarget]);
 
   return (
     <motion.div

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AnimationProvider } from './context/AnimationContext';
 import FloatingHeroEyeball from './components/FloatingHeroEyeball';
 import PeekingVignette from './components/PeekingVignette';
 import { DemoModeToggle } from './components/DemoModeToggle';
@@ -78,7 +79,8 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <DemoModeToggle />
+        <AnimationProvider>
+          <DemoModeToggle />
 
         {/* The global vignette layer */}
         <PeekingVignette
@@ -111,6 +113,7 @@ function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </AnimationProvider>
       </AuthProvider>
     </Router>
   );
