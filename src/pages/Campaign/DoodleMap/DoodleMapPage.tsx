@@ -7,6 +7,7 @@ import MiCALogo from '../../../components/MiCALogo';
 import DoodleCanvas from './DoodleCanvas';
 import { MICA_ORANGE, STEP_TOTAL } from './constants';
 import type { FormValues } from './types';
+import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../../data/demoData';
 
 import '../../../App.css';
 
@@ -25,6 +26,7 @@ const DoodleMapPage: React.FC = () => {
   });
   const [finished, setFinished] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [launchError, setLaunchError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const showNode = useCallback((nodeId: string, edgeId?: string) => {
@@ -202,28 +204,35 @@ const DoodleMapPage: React.FC = () => {
   const handleLaunch = useCallback(async () => {
     if (submitting) return;
     setSubmitting(true);
+    setLaunchError(null);
 
+    if (DEMO_MODE_ENABLED()) {
+      navigate(`/campaign/${DEMO_CAMPAIGN.id}/tone-preview`);
+      setSubmitting(false);
+      return;
+    }
+
+    // #region agent log
+    const insertPayload = { user_id: user?.id, product_name: values.name, product_description: values.desc, target_audience: values.audience, launch_date: values.date || null, budget: parseFloat(values.budgetAmount.replace(/[^0-9.]/g, '')) || 0, tone: values.tone || 'Professional', location: values.location || null, status: 'draft' };
+    fetch('http://127.0.0.1:7835/ingest/94f3978e-e6d4-41d8-ae03-47ab313520e7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'cbad7c'},body:JSON.stringify({sessionId:'cbad7c',location:'DoodleMapPage.tsx:handleLaunch:pre-insert',message:'Insert payload',data:{userId:user?.id,hasName:!!values.name,hasDesc:!!values.desc,tone:values.tone,date:values.date,budget:values.budgetAmount,location:values.location},timestamp:Date.now(),hypothesisId:'H-B,H-E'})}).catch(()=>{});
+    // #endregion
     try {
-      const { data, error } = await supabase.from('campaigns').insert({
-        user_id: user?.id,
-        product_name: values.name,
-        product_description: values.desc,
-        target_audience: values.audience,
-        launch_date: values.date || null,
-        budget: parseFloat(values.budgetAmount.replace(/[^0-9.]/g, '')) || 0,
-        tone: values.tone || 'Professional',
-        location: values.location || null,
-        attachment_url: values.attachedDocUrl || null,
-        status: 'draft',
-      }).select().single();
+      const { data, error } = await supabase.from('campaigns').insert(insertPayload).select().single();
 
+      // #region agent log
+      fetch('http://127.0.0.1:7835/ingest/94f3978e-e6d4-41d8-ae03-47ab313520e7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'cbad7c'},body:JSON.stringify({sessionId:'cbad7c',location:'DoodleMapPage.tsx:handleLaunch:post-insert',message:'Insert result',data:{hasData:!!data,dataId:data?.id,hasError:!!error,errorMsg:error?.message,errorCode:error?.code,errorDetails:error?.details},timestamp:Date.now(),hypothesisId:'H-C,H-D'})}).catch(()=>{});
+      // #endregion
       if (error) throw error;
       if (data?.id) {
         navigate(`/campaign/${data.id}/tone-preview`);
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      // #region agent log
+      const errObj = err as Record<string, unknown>;
+      fetch('http://127.0.0.1:7835/ingest/94f3978e-e6d4-41d8-ae03-47ab313520e7',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'cbad7c'},body:JSON.stringify({sessionId:'cbad7c',location:'DoodleMapPage.tsx:handleLaunch:catch',message:'Launch error caught',data:{errMsg:errObj?.message,errCode:errObj?.code,errDetails:errObj?.details,errHint:errObj?.hint,errStr:String(err)},timestamp:Date.now(),hypothesisId:'H-B,H-C,H-D,H-E'})}).catch(()=>{});
+      // #endregion
       console.error('Failed to create campaign:', err);
-      navigate('/campaigns');
+      setLaunchError('Something went wrong. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -383,6 +392,11 @@ const DoodleMapPage: React.FC = () => {
               >
                 {submitting ? 'Creating…' : 'View Campaign →'}
               </button>
+              {launchError && (
+                <div style={{ fontSize: 13, color: '#ff6666', marginTop: 14, fontWeight: 500 }}>
+                  {launchError}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

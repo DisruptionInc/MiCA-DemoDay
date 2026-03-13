@@ -169,38 +169,43 @@ const DoodleNode: React.FC<DoodleNodeProps> = ({
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-          onClick={handleNodeBodyClick}
           style={{
             position: 'absolute',
             left: pos.x - diameter / 2,
             top: pos.y - diameter / 2,
             width: diameter,
             height: diameter,
-            ...wobble,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: node.id === 'location' && cityInputMode ? 'visible' : 'hidden',
-            background: isActionButton
-              ? `linear-gradient(135deg, ${MICA_ORANGE}, #FF4400)`
-              : NODE_BG,
-            border: isActionButton ? 'none' : `2px solid ${MICA_ORANGE}`,
-            boxShadow: isActionButton
-              ? `0 0 55px rgba(255,90,0,0.5)`
-              : isActive
-                ? `0 0 0 3px ${MICA_ORANGE_GLOW}, 0 0 40px rgba(255,122,0,0.2)`
-                : `0 0 20px rgba(255,122,0,0.15)`,
-            backdropFilter: 'blur(20px)',
-            padding: isActionButton ? 0 : 20,
-            cursor: isActionButton ? 'pointer' : (!isActive ? 'pointer' : 'default'),
-            transition: 'width 0.4s ease, height 0.4s ease, box-shadow 0.3s ease',
+            transition: 'width 0.4s ease, height 0.4s ease',
           }}
         >
           <motion.div
-            animate={{ y: [0, -6, 0] }}
+            animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: isStart ? 3.2 : 4, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}
+            onClick={handleNodeBodyClick}
+            style={{
+              width: '100%',
+              height: '100%',
+              ...wobble,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: node.id === 'location' && cityInputMode ? 'visible' : 'hidden',
+              background: isActionButton
+                ? `linear-gradient(135deg, ${MICA_ORANGE}, #FF4400)`
+                : NODE_BG,
+              border: isActionButton ? 'none' : `2px solid ${MICA_ORANGE}`,
+              boxShadow: isActionButton
+                ? `0 0 55px rgba(255,90,0,0.5)`
+                : isActive
+                  ? `0 0 0 3px ${MICA_ORANGE_GLOW}, 0 0 40px rgba(255,122,0,0.2)`
+                  : `0 0 20px rgba(255,122,0,0.15)`,
+              backdropFilter: 'blur(20px)',
+              padding: isActionButton ? 0 : 20,
+              cursor: isActionButton ? 'pointer' : (!isActive ? 'pointer' : 'default'),
+              transition: 'box-shadow 0.3s ease',
+            }}
           >
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
             {isStart && (
               <div onClick={onStart} style={{ textAlign: 'center', cursor: 'pointer' }}>
                 <div style={{ fontSize: 28, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-1px' }}>
@@ -629,6 +634,7 @@ const DoodleNode: React.FC<DoodleNodeProps> = ({
                 )}
               </>
             )}
+            </div>
           </motion.div>
         </motion.div>
       )}
