@@ -166,7 +166,7 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
                         <Button
                             variant="custom"
                             onClick={() => setShowConfirm(true)}
-                            className="bg-[#FF7A00] hover:bg-[#FF9500] text-white px-8 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(255,122,0,0.5)] group-hover:shadow-[0_10px_35px_rgba(255,122,0,0.6)] transform group-hover:scale-[1.05] hover:-translate-y-1 transition-all duration-300 font-bold flex items-center gap-2 border border-[#FF7A00] group-hover:border-white/50"
+                            className="bg-[#FF7A00] hover:bg-[#FF6600] text-white px-8 py-4 text-lg rounded-full shadow-[0_0_20px_rgba(255,122,0,0.5)] group-hover:shadow-[0_10px_35px_rgba(255,122,0,0.6)] transform group-hover:scale-[1.05] hover:-translate-y-1 transition-all duration-300 font-bold flex items-center gap-2 border border-[#FF7A00] group-hover:border-white/50"
                         >
                             <Rocket className="w-5 h-5 text-white" /> LAUNCH CAMPAIGN NOW
                         </Button>
@@ -257,7 +257,7 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
                             variant="custom"
                             onClick={handleLaunch}
                             disabled={isLaunching}
-                            className="bg-[#FF7A00] hover:bg-[#FF8800] text-white min-w-[160px] relative overflow-hidden shadow-[0_0_15px_rgba(255,122,0,0.4)] border border-[#FF7A00]"
+                            className="bg-[#FF7A00] hover:bg-[#FF6600] text-white min-w-[160px] relative overflow-hidden shadow-[0_0_15px_rgba(255,122,0,0.4)] border border-[#FF7A00]"
                         >
                             {isLaunching ? (
                                 <span className="flex items-center gap-2">

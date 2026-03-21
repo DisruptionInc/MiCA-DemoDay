@@ -90,7 +90,7 @@ function computeTitles(entries: ScheduleEntry[]): ScheduleEntry[] {
 
 // ── Channel helpers ───────────────────────────────────────────────
 const CHANNEL_STYLE: Record<string, { icon: React.ReactNode; color: string; bg: string; border: string }> = {
-    email:     { icon: <Mail className="w-3.5 h-3.5" />,        color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)' },
+    email:     { icon: <Mail className="w-3.5 h-3.5" />,        color: '#FF7A00', bg: 'rgba(255,122,0,0.12)',  border: 'rgba(255,122,0,0.3)' },
     whatsapp:  { icon: <MessageSquare className="w-3.5 h-3.5" />, color: '#22C55E', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.3)'  },
     instagram: { icon: <Instagram className="w-3.5 h-3.5" />,    color: '#EC4899', bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.3)' },
 };

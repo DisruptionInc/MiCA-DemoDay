@@ -36,7 +36,13 @@
       "Bash(grep -l \"export\\\\|React.FC\" /d/Work/AIGF/AGProjects/MiCA-Mac/src/pages/*.tsx /d/Work/AIGF/AGProjects/MiCA-Mac/src/pages/**/*.tsx)",
       "Bash(xargs grep:*)",
       "Bash(find D:/Work/AIGF/AGProjects/MiCA-Mac -name *.config.* -o -name tailwind.*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git add:*)",
+      "Bash(find /d/Work/AIGF/AGProjects/MiCA-Mac -maxdepth 2 -type f \\\\\\(-name tailwind.config.* -o -name vite.config.* \\\\\\))",
+      "Bash(grep -r tailwind /d/Work/AIGF/AGProjects/MiCA-Mac --include=*.css --include=*.ts --include=*.tsx --include=*.js)"
     ]
   }
 }

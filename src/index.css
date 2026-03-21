@@ -85,12 +85,12 @@ body {
   top: 0;
   width: 4px;
   height: 100%;
-  background-color: var(--color-accent, #F59E0B);
-  /* Using gold/orange as accent */
+  background-color: var(--color-accent, #FF7A00);
+  /* Using brand orange as accent */
   transform: scaleY(0);
   transform-origin: bottom;
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 10px var(--color-accent, #F59E0B);
+  box-shadow: 0 0 10px var(--color-accent, #FF7A00);
 }
 
 .accent-bar:hover::before {
@@ -105,10 +105,10 @@ body {
 .card-lift:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 10px 15px -5px rgba(0, 0, 0, 0.4),
-    0 0 12px rgba(245, 158, 11, 0.5);
+    0 0 12px rgba(255, 122, 0, 0.5);
   background-color: rgba(255, 255, 255, 0.05);
   /* Slight glassmorphism lightening */
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: rgba(255, 122, 0, 0.3);
 }
 
 /* Custom Scrollbar Styling */

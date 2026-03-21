@@ -240,7 +240,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ version: eyeVersion = 
             author: "Sarah Chen",
             title: "Founder, Online Meditation Platform",
             initial: "S",
-            color: "from-orange-500 to-amber-500"
+            color: "from-[#FF7A00] to-[#FF6600]"
         }
     ];
 
@@ -464,7 +464,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ version: eyeVersion = 
                                 <span className="text-[#FF7A00] font-bold not-italic">MiCA</span> {featuredTestimonial.quoteAfter}
                             </blockquote>
                             <div className="flex items-center justify-center gap-5">
-                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF7A00] to-orange-400 flex items-center justify-center font-bold text-2xl text-white shadow-lg">{featuredTestimonial.initial}</div>
+                                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF7A00] to-[#FF6600] flex items-center justify-center font-bold text-2xl text-white shadow-lg">{featuredTestimonial.initial}</div>
                                 <div className="text-left">
                                     <p className="text-xl text-white font-semibold">{featuredTestimonial.author}</p>
                                     <p className="text-gray-400">{featuredTestimonial.title}</p>

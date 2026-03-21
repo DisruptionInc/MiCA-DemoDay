@@ -104,7 +104,7 @@ export default function WaitlistModal({ visible, source, onClose }: WaitlistModa
                                     </div>
 
                                     {status === 'duplicate' && (
-                                        <p style={{ fontSize: '12px', color: '#F59E0B', marginBottom: '10px' }}>
+                                        <p style={{ fontSize: '12px', color: '#FF7A00', marginBottom: '10px' }}>
                                             👀 MiCA already has your email — you're in the queue.
                                         </p>
                                     )}
