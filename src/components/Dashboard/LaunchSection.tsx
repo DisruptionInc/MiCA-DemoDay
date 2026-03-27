@@ -30,7 +30,7 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     const [isLaunching, setIsLaunching] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { setMode } = useAnimationContext();
+    const { setMode, setEyeballHidden } = useAnimationContext();
 
     // Dialog-local CSV upload state
     const [dialogIsUploading, setDialogIsUploading] = useState(false);
@@ -41,6 +41,7 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     const handleLaunch = async () => {
         setIsLaunching(true);
         setError(null);
+        setEyeballHidden(false); // Fade eyeball in before rocket arrives
         setMode('launching'); // Trigger eyeball rocket sequence
 
         try {
@@ -74,6 +75,7 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
         } finally {
             setIsLaunching(false);
             setMode('idle'); // Reset mode
+            setEyeballHidden(true); // Fade eyeball back out after animation
         }
     };
 

@@ -36,7 +36,7 @@ function AppShell({
   eyeVersion: 'modern' | 'classic';
   setEyeVersion: (v: 'modern' | 'classic') => void;
 }) {
-  const { setMode } = useAnimationContext();
+  const { setMode, eyeballHidden } = useAnimationContext();
 
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [vignetteVisible, setVignetteVisible] = useState(false);
@@ -133,7 +133,7 @@ function AppShell({
 
       {/* The global vignette layer */}
       <PeekingVignette
-        visible={vignetteVisible}
+        visible={vignetteVisible && !eyeballHidden}
         gazeX={mousePos.x / window.innerWidth}
         gazeY={mousePos.y / window.innerHeight}
         version={eyeVersion}

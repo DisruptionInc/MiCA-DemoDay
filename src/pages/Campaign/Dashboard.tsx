@@ -15,6 +15,7 @@ import { generateImage } from '../../services/imageService';
 import { buildImagePrompt } from '../../services/imagePromptBuilder';
 import { pauseCampaign, resumeCampaign, triggerWebhook } from '../../services/executionService';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
+import { useAnimationContext } from '../../context/AnimationContext';
 
 interface Campaign {
     id: string;
@@ -74,6 +75,12 @@ export const Dashboard: React.FC = () => {
     const [sendingTest, setSendingTest] = useState<string | null>(null); // ID of asset being tested
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [exportingPDF, setExportingPDF] = useState<string | null>(null); // 'strategy' | 'assets' | null
+
+    const { setEyeballHidden } = useAnimationContext();
+    useEffect(() => {
+        setEyeballHidden(true);
+        return () => setEyeballHidden(false);
+    }, []);
 
     useEffect(() => {
         if (id) fetchData();

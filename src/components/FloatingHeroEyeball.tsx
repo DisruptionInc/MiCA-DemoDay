@@ -21,7 +21,7 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
   // Is it currently chasing the mouse?
   const isChasingRef = useRef(false);
 
-  const { mode, gazeTarget } = useAnimationContext();
+  const { mode, gazeTarget, eyeballHidden } = useAnimationContext();
 
   const modeRef = useRef(mode);
   useEffect(() => {
@@ -179,6 +179,8 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
 
   return (
     <motion.div
+      animate={{ opacity: eyeballHidden ? 0 : 1 }}
+      transition={{ opacity: { duration: 0.8, ease: 'easeInOut' } }}
       style={{
         position: 'fixed',
         left: 0,
@@ -189,7 +191,7 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
         translateX: '-50%',
         translateY: '-50%',
         zIndex: 50,
-        pointerEvents: 'auto'
+        pointerEvents: eyeballHidden ? 'none' : 'auto'
       }}
     >
       <EyeCharacter
