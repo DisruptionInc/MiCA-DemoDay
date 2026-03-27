@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MICA_ORANGE, MICA_ORANGE_GLOW } from './constants';
+import { DEMO_MODE_ENABLED } from '../../../data/demoData';
 import type { NodeDef, FormValues, NodePosition } from './types';
 
 function clamp(value: number, min: number, max: number): number {
@@ -385,7 +386,7 @@ const DoodleNode: React.FC<DoodleNodeProps> = ({
             {isLetsGo && (
               <div onClick={onFinish} style={{ textAlign: 'center', cursor: 'pointer', padding: '0 18px' }}>
                 <div style={{ fontSize: 32, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.5px' }}>
-                  Generate tone preview
+                  {DEMO_MODE_ENABLED() ? 'Generate Campaign' : 'Generate tone preview'}
                 </div>
               </div>
             )}

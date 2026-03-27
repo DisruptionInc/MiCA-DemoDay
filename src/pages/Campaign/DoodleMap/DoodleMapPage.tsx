@@ -248,7 +248,7 @@ const DoodleMapPage: React.FC = () => {
     setLaunchError(null);
 
     if (DEMO_MODE_ENABLED()) {
-      navigate(`/campaign/${DEMO_CAMPAIGN.id}/tone-preview`);
+      navigate(`/campaign/${DEMO_CAMPAIGN.id}/generating`);
       setSubmitting(false);
       return;
     }
@@ -304,6 +304,10 @@ const DoodleMapPage: React.FC = () => {
   }, [user, values, navigate, submitting]);
 
   const handleFinish = useCallback(() => {
+    if (DEMO_MODE_ENABLED()) {
+      handleLaunch();
+      return;
+    }
     setFinished(true);
     setMode('generating');
     setEyeballMood('concentrating');

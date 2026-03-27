@@ -1,5 +1,6 @@
 import React from 'react';
 import { Download, Play, Pause, RefreshCw, Copy, Check } from 'lucide-react';
+import { DEMO_MODE_ENABLED } from '../data/demoData';
 
 // Video Player Component
 interface VideoPlayerProps {
@@ -131,6 +132,7 @@ interface SocialPostCardProps {
 export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerateImage, generatingImageId, onCopy, copiedId }) => {
     const [imageError, setImageError] = React.useState(false);
     const [expanded, setExpanded] = React.useState(false);
+    const isDemo = DEMO_MODE_ENABLED();
 
     return (
         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-pink-500/50 hover:shadow-[0_0_20px_rgba(236,72,153,0.15)] hover:-translate-y-1 transition-all duration-300 group/card">
@@ -144,7 +146,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerate
                             className="w-full h-full object-cover"
                             onError={() => setImageError(true)}
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <div className={`absolute inset-0 ${isDemo ? '' : 'bg-black/60'} opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3`}>
                             <a
                                 href={post.image_url}
                                 target="_blank"
