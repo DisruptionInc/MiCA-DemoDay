@@ -90,12 +90,35 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
 
+    // Returns true if (x, y) is too close to any data-eyeball-avoid element
+    const isOverlappingAvoid = (x: number, y: number) => {
+      const margin = 90; // buffer ~= eyeball radius + padding
+      for (const el of document.querySelectorAll('[data-eyeball-avoid]')) {
+        const r = el.getBoundingClientRect();
+        if (x > r.left - margin && x < r.right + margin &&
+            y > r.top - margin && y < r.bottom + margin) return true;
+      }
+      return false;
+    };
+
+    // Fallback: pick a position near the screen edge, away from center content
+    const safeEdgePos = () => ({
+      x: Math.random() > 0.5
+        ? 80 + Math.random() * 120
+        : window.innerWidth - 80 - Math.random() * 120,
+      y: 90 + Math.random() * (window.innerHeight - 200),
+    });
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = Math.max(90, e.clientY); // Don't chase cursor under the header
       if (isChasingRef.current && modeRef.current !== 'focused') {
-        // Offset by 80px so it stays close but doesn't block the actual click target
-        setTargetPos({ x: mouseX + 80, y: mouseY + 80 });
+        const chaseX = mouseX + 80;
+        const chaseY = mouseY + 80;
+        // Don't chase if it would land on an avoid element
+        if (!isOverlappingAvoid(chaseX, chaseY)) {
+          setTargetPos({ x: chaseX, y: chaseY });
+        }
       }
     };
     window.addEventListener('mousemove', handleMouseMove);
@@ -104,14 +127,16 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
     const pickNewTarget = () => {
       // 20% chance to chase the mouse enthusiastically to encourage a click
       if (Math.random() < 0.2) {
-        isChasingRef.current = true;
-        setTargetPos({ x: mouseX + 80, y: mouseY + 80 });
-
-        // Stop chasing after 2.5s
-        setTimeout(() => {
-          isChasingRef.current = false;
-        }, 2500);
-        return;
+        const chaseX = mouseX + 80;
+        const chaseY = mouseY + 80;
+        if (!isOverlappingAvoid(chaseX, chaseY)) {
+          isChasingRef.current = true;
+          setTargetPos({ x: chaseX, y: chaseY });
+          // Stop chasing after 2.5s
+          setTimeout(() => { isChasingRef.current = false; }, 2500);
+          return;
+        }
+        // Mouse is near an avoid element — fall through to wander instead
       }
 
       // Otherwise, find areas of interest
@@ -130,13 +155,12 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
         const destX = rect.left + (Math.random() * rect.width);
         const destY = goTop ? Math.max(90, rect.top - 70) : Math.min(window.innerHeight - 50, rect.bottom + 70);
 
-        setTargetPos({ x: destX, y: destY });
+        setTargetPos(isOverlappingAvoid(destX, destY) ? safeEdgePos() : { x: destX, y: destY });
       } else {
-        // 10% chance to just wander somewhere random but safe
-        setTargetPos({
-          x: 100 + Math.random() * (window.innerWidth - 200),
-          y: 90 + Math.random() * (window.innerHeight - 190)
-        });
+        // Wander somewhere random but safe
+        const randX = 100 + Math.random() * (window.innerWidth - 200);
+        const randY = 90 + Math.random() * (window.innerHeight - 190);
+        setTargetPos(isOverlappingAvoid(randX, randY) ? safeEdgePos() : { x: randX, y: randY });
       }
     };
 
@@ -164,15 +188,22 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
   useEffect(() => {
     if (mode === 'generating' && gazeTarget) {
       // Position eyeball to the right of the target text (approx 300px offset)
-      setTargetPos({ 
-        x: gazeTarget.x + (typeof window !== 'undefined' ? 300 : 0), 
-        y: gazeTarget.y 
+      setTargetPos({
+        x: gazeTarget.x + (typeof window !== 'undefined' ? 300 : 0),
+        y: gazeTarget.y
       });
     } else if (mode === 'launching') {
       // Move exactly to bottom-center of the screen before the rocket arrives
       setTargetPos({
         x: typeof window !== 'undefined' ? window.innerWidth / 2 : 800,
         y: typeof window !== 'undefined' ? window.innerHeight * 0.66 : 600
+      });
+    } else if (mode === 'focused') {
+      // Retreat to top-right corner so it doesn't cover form fields
+      isChasingRef.current = false;
+      setTargetPos({
+        x: typeof window !== 'undefined' ? window.innerWidth - 90 : 800,
+        y: 90,
       });
     }
   }, [mode, gazeTarget]);
@@ -191,7 +222,7 @@ export default function FloatingHeroEyeball({ onGiggle, version = 'modern' }: Pr
         translateX: '-50%',
         translateY: '-50%',
         zIndex: 50,
-        pointerEvents: eyeballHidden ? 'none' : 'auto'
+        pointerEvents: 'none' // Outer wrapper always passthrough; EyeCharacter's giggle-wrapper retains its own clicks
       }}
     >
       <EyeCharacter

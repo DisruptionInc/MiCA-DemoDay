@@ -281,6 +281,7 @@ const DoodleNode: React.FC<DoodleNodeProps> = ({
           animate={{ scale: 1, rotate: 0, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
+          data-eyeball-avoid={isActive ? 'true' : undefined}
           style={{
             position: 'absolute',
             left: pos.x - nodeWidth / 2,
