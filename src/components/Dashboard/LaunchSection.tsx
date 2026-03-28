@@ -21,9 +21,9 @@ export const LaunchSection: React.FC<LaunchSectionProps> = ({
     campaignId,
     recipientCount,
     recommendedChannels,
-    emailCount,
-    whatsappCount,
-    socialCount,
+    emailCount: _emailCount,
+    whatsappCount: _whatsappCount,
+    socialCount: _socialCount,
     onLaunchComplete,
     onContactsUploaded
 }) => {
