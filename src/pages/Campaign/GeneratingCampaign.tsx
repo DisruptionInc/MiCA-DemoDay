@@ -21,6 +21,22 @@ function extractJson(response: string): string {
     return cleaned;
 }
 
+// Repair JSON that contains HTML with double-quoted attributes inside string values.
+// The LLM often writes style="..." inside a JSON string, breaking the outer quotes.
+function parseJsonWithHtml(jsonStr: string): any {
+    try {
+        return JSON.parse(jsonStr);
+    } catch {
+        // Replace double-quoted HTML attribute values with single-quoted ones.
+        // Targets the most common HTML attributes that trigger this issue.
+        const repaired = jsonStr.replace(
+            /(href|src|style|class|id|type|target|rel|width|height|align|valign|bgcolor|border|cellpadding|cellspacing)="([^"]*)"/g,
+            "$1='$2'"
+        );
+        return JSON.parse(repaired);
+    }
+}
+
 interface Campaign {
     id: string;
     product_name: string;
@@ -115,9 +131,11 @@ export const GeneratingCampaign: React.FC = () => {
             // If already generated, redirect to dashboard
             if (data.status === 'plan_ready' || data.status === 'approved' || data.status === 'executing') {
                 navigate(`/campaign/${id}/dashboard`);
-            } else if (!generationStartedRef.current && data.status === 'tone_approved') {
-                // Auto-start generation
-                startGeneration(data);
+            } else if (!generationStartedRef.current && (data.status === 'tone_approved' || data.status === 'generating')) {
+                // Auto-start generation. Also restart if stuck in 'generating' state
+                // (e.g. previous session failed mid-way due to an API error).
+                await supabase.from('campaigns').update({ status: 'tone_approved' }).eq('id', data.id);
+                startGeneration({ ...data, status: 'tone_approved' });
             }
 
         } catch (error) {
@@ -463,7 +481,7 @@ Output JSON format:
       "template_order": 1,
       "subject": "string — compelling subject line (max 60 chars)",
       "pre_header": "string — preview text that complements the subject (max 90 chars)",
-      "body": "string — complete HTML email body. Structure: (1) greeting with {{first_name}}, (2) 2-3 paragraphs of engaging content using <p>, <strong>, <ul>, <li> tags, (3) REQUIRED: end with a styled CTA button using this exact HTML pattern: <a href='LINK_HERE' style='background-color:#F59E0B;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;margin-top:16px;'>CTA_TEXT →</a> — for LINK_HERE: scan the PRODUCT DESCRIPTION and PRODUCT DOCUMENT for any registration URL, website link, or product page link and use it directly; if no link is found use {{cta_link}} as the placeholder. Write in the exact campaign tone. Use ₹ for currency. Aim for 200-300 words.",
+      "body": "string — complete HTML email body. IMPORTANT: ALL HTML attributes must use single quotes — style='...' and href='...' not double quotes. Structure: (1) greeting with {{first_name}}, (2) 2-3 paragraphs of engaging content using <p>, <strong>, <ul>, <li> tags, (3) REQUIRED: end with a styled CTA button using this exact HTML pattern: <a href='LINK_HERE' style='background-color:#F59E0B;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;margin-top:16px;'>CTA_TEXT →</a> — for LINK_HERE: scan the PRODUCT DESCRIPTION and PRODUCT DOCUMENT for any registration URL, website link, or product page link and use it directly; if no link is found use {{cta_link}} as the placeholder. Write in the exact campaign tone. Use ₹ for currency. Aim for 200-300 words.",
       "cta_text": "string — clear, action-oriented call-to-action button text (max 5 words)",
       "scheduled_day": 1
     }
@@ -480,10 +498,12 @@ Rules:
 - NEVER mention or invent a product price/cost. The marketing budget is NOT the product's price. Only mention pricing if specific pricing info appears in the PRODUCT DESCRIPTION above.
 - NEVER fabricate statistics, testimonials, or specific numbers. Only use factual claims from the PRODUCT DESCRIPTION.`;
 
-        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. Keep emails focused and readable — 200-300 words in the body, no padding. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey. Return ONLY valid JSON. No markdown, no preamble.`;
+        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. Keep emails focused and readable — 200-300 words in the body, no padding. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey. Return ONLY valid JSON. No markdown, no preamble.
+
+CRITICAL JSON RULE: The body field contains HTML. ALL HTML attribute values MUST use single quotes (') — never double quotes ("). Example: style='color:red' and href='https://...' — not style="color:red". Double quotes inside a JSON string break the JSON.`;
 
         const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7, maxTokens: 10000 });
-        const emailsJson = JSON.parse(extractJson(response));
+        const emailsJson = parseJsonWithHtml(extractJson(response));
 
         const emailsToInsert = emailsJson.emails.map((e: any) => ({
             campaign_id: campaignData.id,
@@ -657,6 +677,11 @@ Content Rules:
             } catch (err) {
                 console.error(`Failed to generate image for post ${post.id}`, err);
                 // Continue to next image even if one fails
+            }
+
+            // Brief pause between images to avoid Replicate rate limits
+            if (completed < total) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
             }
         }
         setProgressText("");

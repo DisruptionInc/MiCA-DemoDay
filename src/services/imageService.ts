@@ -65,11 +65,19 @@ async function runPrediction(model: ModelConfig, prompt: string): Promise<string
   const apiToken = import.meta.env.VITE_REPLICATE_API_TOKEN;
   const authHeader = { 'Authorization': `Bearer ${apiToken}` };
 
-  const createResponse = await fetch(model.url, {
-    method: 'POST',
-    headers: { ...authHeader, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input: model.buildInput(prompt) }),
-  });
+  // Retry up to 3 times on 429 rate-limit responses with exponential backoff.
+  let createResponse!: Response;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    createResponse = await fetch(model.url, {
+      method: 'POST',
+      headers: { ...authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input: model.buildInput(prompt) }),
+    });
+    if (createResponse.status !== 429) break;
+    const waitMs = (attempt + 1) * 8000; // 8s, 16s, 24s
+    console.log(`[ImageService] ${model.name} rate-limited (429), retrying in ${waitMs / 1000}s...`);
+    await new Promise(resolve => setTimeout(resolve, waitMs));
+  }
 
   if (!createResponse.ok) {
     throw new Error(`${model.name}: HTTP ${createResponse.status} ${createResponse.statusText}`);
