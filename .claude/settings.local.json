@@ -42,7 +42,10 @@
       "Bash(git stash:*)",
       "Bash(git add:*)",
       "Bash(find /d/Work/AIGF/AGProjects/MiCA-Mac -maxdepth 2 -type f \\\\\\(-name tailwind.config.* -o -name vite.config.* \\\\\\))",
-      "Bash(grep -r tailwind /d/Work/AIGF/AGProjects/MiCA-Mac --include=*.css --include=*.ts --include=*.tsx --include=*.js)"
+      "Bash(grep -r tailwind /d/Work/AIGF/AGProjects/MiCA-Mac --include=*.css --include=*.ts --include=*.tsx --include=*.js)",
+      "Bash(git diff:*)",
+      "Bash(git checkout:*)",
+      "Bash(grep -n \"FloatingHeroEyeball\\\\|visible.*false\\\\|display.*none\" src/App.tsx src/pages/*.tsx)"
     ]
   }
 }
