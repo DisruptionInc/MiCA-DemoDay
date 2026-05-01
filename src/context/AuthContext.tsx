@@ -51,11 +51,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return; // Skip Supabase auth listener
         }
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        supabase.auth.getSession()
+            .then(({ data: { session } }) => {
+                setSession(session);
+                setUser(session?.user ?? null);
+                setLoading(false);
+            })
+            .catch((err) => {
+                // Auth backend unreachable (DNS failure, project paused, network offline).
+                // Don't gate the UI on this — public routes must render regardless.
+                console.error('Auth getSession failed:', err);
+                setLoading(false);
+            });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
@@ -75,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{ user, session, loading, signOut }}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
