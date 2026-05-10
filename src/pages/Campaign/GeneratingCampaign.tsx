@@ -4,12 +4,14 @@ import { Sparkles, CheckCircle2, Circle, AlertCircle, Loader2 } from 'lucide-rea
 import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Layout } from '../../components/Layout';
-import { callAI } from '../../services/aiService';
+import { callAIStructured } from '../../services/aiService';
 import { generateImage } from '../../services/imageService';
 import { buildImagePrompt } from '../../services/imagePromptBuilder';
 import { generateVideo } from '../../services/videoService';
 import { HEYGEN_CONFIG } from '../../config/heygen';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN } from '../../data/demoData';
+import MiCALogo from '../../components/MiCALogo';
+import { useAnimationContext } from '../../context/AnimationContext';
 
 interface Campaign {
     id: string;
@@ -45,6 +47,36 @@ export const GeneratingCampaign: React.FC = () => {
     const [progressText, setProgressText] = useState("");
     const generationStartedRef = useRef(false);
 
+    // Global Animation State Context
+    const { setMode, setGenerationProgress, setGazeTarget } = useAnimationContext();
+
+    // Refs for step DOM elements so the Eyeball can look at them
+    const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    useEffect(() => {
+        setMode('generating');
+        return () => {
+            setMode('idle');
+            setGenerationProgress(0);
+            setGazeTarget(null);
+        };
+    }, [setMode, setGenerationProgress, setGazeTarget]);
+
+    // Update Eyeball progress and gaze whenever currentStep changes
+    useEffect(() => {
+        // Calculate progress (0 to 1)
+        const progress = Math.min((currentStep + 1) / STEPS.length, 1);
+        setGenerationProgress(progress);
+
+        // Calculate DOM position of current step for Eyeball to look at
+        const stepEl = stepRefs.current[currentStep];
+        if (stepEl) {
+            const rect = stepEl.getBoundingClientRect();
+            // Point roughly at the center-left of the step element
+            setGazeTarget({ x: rect.left + 50, y: rect.top + rect.height / 2 });
+        }
+    }, [currentStep, setGenerationProgress, setGazeTarget]);
+
     useEffect(() => {
         fetchCampaign();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -75,9 +107,11 @@ export const GeneratingCampaign: React.FC = () => {
             // If already generated, redirect to dashboard
             if (data.status === 'plan_ready' || data.status === 'approved' || data.status === 'executing') {
                 navigate(`/campaign/${id}/dashboard`);
-            } else if (!generationStartedRef.current && data.status === 'tone_approved') {
-                // Auto-start generation
-                startGeneration(data);
+            } else if (!generationStartedRef.current && (data.status === 'tone_approved' || data.status === 'generating')) {
+                // Auto-start generation. Also restart if stuck in 'generating' state
+                // (e.g. previous session failed mid-way due to an API error).
+                await supabase.from('campaigns').update({ status: 'tone_approved' }).eq('id', data.id);
+                startGeneration({ ...data, status: 'tone_approved' });
             }
 
         } catch (error) {
@@ -136,7 +170,7 @@ export const GeneratingCampaign: React.FC = () => {
         // Done
         setTimeout(() => {
             navigate(`/campaign/${DEMO_CAMPAIGN.id}/dashboard`);
-        }, 1000);
+        }, 800);
     };
 
     // --- PRE-PROCESSING: Build rich context before any AI calls ---
@@ -253,7 +287,7 @@ export const GeneratingCampaign: React.FC = () => {
             // Done!
             setTimeout(() => {
                 navigate(`/campaign/${campaignData.id}/dashboard`);
-            }, 1000);
+            }, 800);
 
         } catch (err: any) {
             console.error("Generation Sequence Error:", err);
@@ -277,7 +311,7 @@ export const GeneratingCampaign: React.FC = () => {
             ? `CUSTOMER CONTACT LIST: ${context.contactCount} contacts uploaded (these are the people who will receive WhatsApp messages and emails directly)`
             : `CUSTOMER CONTACT LIST: Not yet provided. Generate the strategy anyway — the user will upload contacts before launching. Note this in your response.`;
 
-        const channelList = context.channels.join(', ');
+        const channelList = 'email, whatsapp, instagram';
 
         const prompt = `Analyze this product and design the optimal marketing campaign. You must CHOOSE the best marketing methodology for this specific product — do NOT use a generic template.
 
@@ -345,8 +379,8 @@ ${contactInfo}
       "total_count": "number — between 5 and 15",
       "journey_type": "broadcast_awareness",
       "rationale": "string",
-      "content_mix": { "educational": "number", "social_proof": "number", "offer": "number", "storytelling": "number", "engagement": "number", "product_showcase": "number" },
-      "stages": [{ "stage_name": "string", "day_range": [start, end], "count": "number", "purpose": "string", "content_direction": "string" }]
+      "content_mix": { "educational": "number", "social_proof": "number", "storytelling": "number", "engagement": "number", "product_showcase": "number" },
+      "stages": [{ "stage_name": "string", "day_range": [start, end], "count": "number", "purpose": "string", "content_direction": "string — describe the static image content concept, NOT video or reel ideas" }]
     }
   },
   "budget_allocation": {
@@ -369,12 +403,36 @@ ${contactInfo}
 - Indian market dynamics: local buying behaviour, cultural nuances, WhatsApp-first culture, Instagram as a discovery platform, price sensitivity, trust-building through personal connection
 - Campaign pacing: how to adjust content volume and intensity based on campaign duration (1-45 days)
 
-You DO NOT use templates. You ANALYZE each product deeply and CHOOSE the optimal strategy. A meditation program gets a completely different approach than a budget water filter.
+You DO NOT use templates. You ANALYZE each product deeply and CHOOSE the optimal strategy.
 
-Return ONLY valid JSON. No markdown, no code fences, no preamble.`;
+BE CONCISE. Every field in the JSON should be clear and precise — not verbose. String values should be 1-3 sentences max. The weekly_plan tactics should be brief action descriptions, not essays. Clarity over length.`;
 
-        const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7 });
-        const strategyJson = JSON.parse(response.replace(/```json\n?|\n?```/g, '').trim());
+        const strategyJson = await callAIStructured<any>({
+            systemPrompt,
+            userPrompt: prompt,
+            temperature: 0.7,
+            maxTokens: 10000,
+            schemaName: "save_marketing_strategy",
+            schemaDescription: "Save the marketing strategy plan for the campaign.",
+            schema: {
+                type: "object",
+                required: ["campaign_name", "methodology", "strategy_summary", "key_messages", "channel_plan", "weekly_plan"],
+                properties: {
+                    campaign_name: { type: "string" },
+                    methodology: { type: "object", additionalProperties: true },
+                    campaign_duration_days: { type: "number" },
+                    strategy_summary: { type: "string" },
+                    target_persona: { type: "object", additionalProperties: true },
+                    key_messages: { type: "array", items: { type: "string" } },
+                    channel_plan: { type: "object", additionalProperties: true },
+                    budget_allocation: { type: "object", additionalProperties: true },
+                    weekly_plan: { type: "array", items: { type: "object", additionalProperties: true } },
+                    expected_outcomes: { type: "object", additionalProperties: true },
+                    no_contact_data_notice: { type: "string" }
+                },
+                additionalProperties: true
+            }
+        });
 
         // Save strategy to DB
         await supabase.from('campaigns').update({ marketing_plan: strategyJson }).eq('id', campaignData.id);
@@ -421,7 +479,7 @@ Output JSON format:
       "template_order": 1,
       "subject": "string — compelling subject line (max 60 chars)",
       "pre_header": "string — preview text that complements the subject (max 90 chars)",
-      "body": "string — complete HTML email body using <p>, <br>, <strong>, <ul>, <li>. Must include: greeting, 2-3 paragraphs of engaging content, and a closing paragraph that leads into the CTA. Write in the exact campaign tone. Reference the product and audience specifically. Use ₹ for currency. Aim for 200-300 words of body content.",
+      "body": "string — complete HTML email body. Structure: (1) greeting with {{first_name}}, (2) 2-3 paragraphs of engaging content using <p>, <strong>, <ul>, <li> tags, (3) REQUIRED: end with a styled CTA button using this exact HTML pattern: <a href=\"LINK_HERE\" style=\"background-color:#F59E0B;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;margin-top:16px;\">CTA_TEXT →</a> — for LINK_HERE: scan the PRODUCT DESCRIPTION and PRODUCT DOCUMENT for any registration URL, website link, or product page link and use it directly; if no link is found use {{cta_link}} as the placeholder. Write in the exact campaign tone. Use ₹ for currency. Aim for 200-300 words.",
       "cta_text": "string — clear, action-oriented call-to-action button text (max 5 words)",
       "scheduled_day": 1
     }
@@ -433,14 +491,42 @@ Rules:
 - Each email must follow the journey stages above — progressing the reader through the ${strategy.methodology?.name || 'conversion'} journey
 - Match the tone EXACTLY: ${toneDescription}
 - Write for the Indian market — use ₹ for currency, reference Indian cultural context where relevant
-- Every email must be complete and ready to send — no placeholders like [Name] or [Link]
+- Every email must be complete and ready to send — use {{first_name}} and {{cta_link}} as template variables; do NOT use bare placeholders like [Name] or [Link]
+- The CTA button is MANDATORY in every email — do not omit it
 - NEVER mention or invent a product price/cost. The marketing budget is NOT the product's price. Only mention pricing if specific pricing info appears in the PRODUCT DESCRIPTION above.
 - NEVER fabricate statistics, testimonials, or specific numbers. Only use factual claims from the PRODUCT DESCRIPTION.`;
 
-        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. You understand Indian consumer psychology, cultural references, and what drives engagement in the Indian market. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey. Return ONLY valid JSON. No markdown, no preamble.`;
+        const systemPrompt = `You are MiCA, an expert AI marketing email copywriter specializing in campaigns for small businesses and entrepreneurs in India. You write complete, high-converting marketing emails that match the requested tone exactly. Keep emails focused and readable — 200-300 words in the body, no padding. You follow the campaign's chosen marketing methodology to structure the email sequence as a deliberate journey.`;
 
-        const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7 });
-        const emailsJson = JSON.parse(response.replace(/```json\n?|\n?```/g, '').trim());
+        const emailsJson = await callAIStructured<{ emails: any[] }>({
+            systemPrompt,
+            userPrompt: prompt,
+            temperature: 0.7,
+            maxTokens: 10000,
+            schemaName: "save_email_templates",
+            schemaDescription: "Save the generated marketing email templates.",
+            schema: {
+                type: "object",
+                required: ["emails"],
+                properties: {
+                    emails: {
+                        type: "array",
+                        items: {
+                            type: "object",
+                            required: ["template_order", "subject", "pre_header", "body", "cta_text", "scheduled_day"],
+                            properties: {
+                                template_order: { type: "number" },
+                                subject: { type: "string" },
+                                pre_header: { type: "string" },
+                                body: { type: "string", description: "Complete HTML email body." },
+                                cta_text: { type: "string" },
+                                scheduled_day: { type: "number" }
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         const emailsToInsert = emailsJson.emails.map((e: any) => ({
             campaign_id: campaignData.id,
@@ -462,7 +548,7 @@ Rules:
             : '';
 
         // WhatsApp Generation
-        if (campaignData.recommended_channels.includes('whatsapp')) {
+        {
             const waPlan = strategy.channel_plan?.whatsapp;
             const waCount = waPlan?.total_count || 8;
             const waStages = waPlan?.stages
@@ -497,12 +583,33 @@ Content Rules:
 - NEVER mention or invent a product price/cost. Only mention pricing if in the PRODUCT DESCRIPTION.
 - NEVER fabricate statistics or testimonials. Only use facts from the PRODUCT DESCRIPTION.`;
 
-            const waResponse = await callAI({
-                systemPrompt: `You are MiCA, an expert WhatsApp marketing copywriter for Indian small businesses. You write messages that feel personal and human — like they come from a trusted local business. Your messages follow a deliberate journey based on the campaign's marketing methodology. Conversational, warm, culturally relevant to India. Return ONLY valid JSON. No markdown, no preamble.`,
+            const waJson = await callAIStructured<{ whatsapp_messages: any[] }>({
+                systemPrompt: `You are MiCA, an expert WhatsApp marketing copywriter for Indian small businesses. You write messages that feel personal and human — like they come from a trusted local business. Your messages follow a deliberate journey based on the campaign's marketing methodology. Conversational, warm, culturally relevant to India.`,
                 userPrompt: waPrompt,
-                temperature: 0.8
+                temperature: 0.8,
+                maxTokens: 8000,
+                schemaName: "save_whatsapp_messages",
+                schemaDescription: "Save the generated WhatsApp messages for the campaign.",
+                schema: {
+                    type: "object",
+                    required: ["whatsapp_messages"],
+                    properties: {
+                        whatsapp_messages: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                required: ["message_order", "message_text", "message_type", "scheduled_day"],
+                                properties: {
+                                    message_order: { type: "number" },
+                                    message_text: { type: "string" },
+                                    message_type: { type: "string" },
+                                    scheduled_day: { type: "number" }
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            const waJson = JSON.parse(waResponse.replace(/```json\n?|\n?```/g, '').trim());
 
             if (waJson.whatsapp_messages?.length > 0) {
                 const waToInsert = waJson.whatsapp_messages.map((m: any) => ({
@@ -515,7 +622,7 @@ Content Rules:
         }
 
         // Instagram Generation
-        if (campaignData.recommended_channels.includes('instagram')) {
+        {
             const igPlan = strategy.channel_plan?.instagram;
             // Guardrail: 5-15 posts
             const igCount = Math.min(15, Math.max(5, igPlan?.total_count || 10));
@@ -545,20 +652,42 @@ Output JSON: { "social_posts": [{ "post_order": 1, "caption": "string", "hashtag
 
 Content Rules:
 - ${igCount} posts total across ${context.campaignDuration} days (distribute evenly, not every day)
-- caption: 150-220 words. Scroll-stopping hook → 2-3 short paragraphs → clear CTA
+- caption: 60-90 words MAX. Hook (1 line) → 2-3 very short punchy lines → CTA. Brevity is essential — stressed, busy people do not read long captions
 - hashtags: 5-8 relevant hashtags as a single string. Mix broad and niche. Include India-specific tags.
-- image_suggestion: 1-2 sentence description of the ideal visual for this post
-- Follow the content mix above — create the right balance of post types
+- image_suggestion: Describe ONE clear, focused visual for this post — a single scene, subject, or graphic that captures the post's core message. If the post covers multiple things, pick the single most powerful one. Can be: a lifestyle scene (person in a relatable real-life situation), a bold text card (ideal for quotes or statistics — state the exact text to display), or a clean focused environment/object. AVOID: icon collections, clipart, multiple unrelated symbols, or cluttered compositions — these look cheap and confusing. NEVER suggest a specific named real person's face (e.g. the instructor's face) — the model cannot render real individuals and will hallucinate a wrong face. General anonymous people in scenes are fine. Must be a STATIC IMAGE — no videos, no reels.
+- All posts use STATIC IMAGES only — no reels, no video formats.
 - Each post must STAND ALONE — no references to previous posts
 - NEVER mention or invent a product price/cost. Only mention pricing if in the PRODUCT DESCRIPTION.
 - NEVER fabricate statistics or testimonials. Only use facts from the PRODUCT DESCRIPTION.`;
 
-            const socialResponse = await callAI({
-                systemPrompt: `You are MiCA, an expert Instagram content strategist for Indian small businesses. You create scroll-stopping captions that build genuine connection and drive action. Each post stands alone — you never reference other posts in the campaign. Your content follows the campaign's marketing methodology and content mix strategy. Return ONLY valid JSON. No markdown, no preamble.`,
+            const socialJson = await callAIStructured<{ social_posts: any[] }>({
+                systemPrompt: `You are MiCA, an expert Instagram content strategist for Indian small businesses. You create scroll-stopping captions that build genuine connection and drive action. Each post stands alone. Be CONCISE — captions must be short and punchy (60-90 words max). Busy, stressed people do not read long posts. Every word must earn its place.`,
                 userPrompt: socialPrompt,
-                temperature: 0.8
+                temperature: 0.8,
+                maxTokens: 8000,
+                schemaName: "save_social_posts",
+                schemaDescription: "Save the generated Instagram posts for the campaign.",
+                schema: {
+                    type: "object",
+                    required: ["social_posts"],
+                    properties: {
+                        social_posts: {
+                            type: "array",
+                            items: {
+                                type: "object",
+                                required: ["post_order", "caption", "hashtags", "scheduled_day", "image_suggestion"],
+                                properties: {
+                                    post_order: { type: "number" },
+                                    caption: { type: "string" },
+                                    hashtags: { type: "string" },
+                                    scheduled_day: { type: "number" },
+                                    image_suggestion: { type: "string" }
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            const socialJson = JSON.parse(socialResponse.replace(/```json\n?|\n?```/g, '').trim());
 
             if (socialJson.social_posts?.length > 0) {
                 const postsToInsert = socialJson.social_posts.map((p: any) => ({
@@ -574,7 +703,6 @@ Content Rules:
 
     // --- API CALL 4: IMAGES ---
     const generateImages = async (campaignData: Campaign) => {
-        if (!campaignData.recommended_channels.includes('instagram')) return;
 
         // Fetch posts that need images
         const { data: posts } = await supabase
@@ -614,6 +742,11 @@ Content Rules:
                 console.error(`Failed to generate image for post ${post.id}`, err);
                 // Continue to next image even if one fails
             }
+
+            // Brief pause between images to avoid Replicate rate limits
+            if (completed < total) {
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
         }
         setProgressText("");
     };
@@ -622,49 +755,87 @@ Content Rules:
     const generateVideoScript = async (campaignData: Campaign, strategy: any) => {
         const creatorName = campaignData.creator_name || 'Business Owner';
 
-        const prompt = `CONTEXT:
+        const userPrompt = `CONTEXT:
 CREATOR_NAME: ${creatorName}
 PRODUCT: ${campaignData.product_name}
 STRATEGY SUMMARY: ${strategy.strategy_summary}
 CHANNELS: ${campaignData.recommended_channels.join(', ')}
 
-Please write the video script based on the system instructions.`;
+Please write the detailed Video Agent prompt.`;
 
-        const systemPrompt = `You are MiCA's video scriptwriter. Write a 60-second video script for an AI avatar spokesperson to present a marketing campaign summary.
+        const systemPrompt = `You are an expert video director for AI marketing campaigns. Write a comprehensive prompt for the HeyGen Video Agent.
 
-The avatar will be speaking directly to the business owner, presenting their campaign strategy in an encouraging, professional tone. The video will be in portrait (9:16) format.
+The prompt must follow this EXACT structure:
 
-Respond in valid JSON only.
+Create a [Duration]-second vertical (9:16) video with [Avatar Description]. Background: [Background Description].
 
-Response format:
-{
-  "video_agent_prompt": "The complete spoken script. Write in natural, conversational spoken English. NOT formal report language. Include natural pauses indicated by '...' where appropriate. Must be 120-150 words (60 seconds at normal speaking pace). Address the business owner by their name (${creatorName})."
-}
+TONE: [One sentence describing the emotional tone and delivery style — e.g. "Conversational friend explaining over chai, excited FOR the client"]
 
-Rules:
-- Start with a warm, personal greeting using the creator's name (e.g. "Namaste ${creatorName}!" or "Hello ${creatorName}!")
-- Mention their product (${campaignData.product_name}) specifically
-- Briefly describe the campaign approach (1-2 sentences)
-- Highlight the 3 most important tactics across the campaign
-- Mention the channels being used
-- End with an encouraging, motivational closing
-- Keep it under 150 words (CRITICAL — longer scripts = longer/expensive videos)
-- Speak naturally — contractions, simple words, like a friendly marketing consultant
-- Reference Indian context naturally if the product is India-focused
-- Do NOT use any visual directions or camera cues — this is audio/speech only`;
+---
 
-        const response = await callAI({ systemPrompt, userPrompt: prompt, temperature: 0.7 });
+SCRIPT:
 
-        let scriptJson;
-        try {
-            const cleanResponse = response.replace(/```json\n?|\n?```/g, '').trim();
-            scriptJson = JSON.parse(cleanResponse);
-        } catch (e) {
-            console.error("JSON Parse Error in Video Script:", e);
-            console.log("Raw Response:", response);
-            // Fallback: create a simple object with the raw response as the prompt
-            scriptJson = { video_agent_prompt: response.replace(/```json\n?|\n?```/g, '').trim() };
-        }
+[SCENE 1 - Opening (0-12 seconds)]
+Avatar speaks with [Emotion/Tone]:
+"[Spoken words]"
+[Visual: Text overlay or action description]
+
+[SCENE 2 - The Problem (12-25 seconds)]
+Avatar speaks:
+"[Spoken words]"
+[Visual: ...]
+
+[SCENE 3 - The Strategy & Channels (25-50 seconds)]
+Avatar gestures:
+"[Spoken words]"
+[Visual: Split screen or animation description]
+
+[SCENE 4 - Results/Closing (50-65 seconds)]
+Avatar speaks:
+"[Spoken words]"
+[Visual: Final frame description]
+
+---
+
+VISUAL NOTES FOR VIDEO AGENT:
+- [Specific note about avatar behavior/gestures]
+- [Text overlay timing and font style]
+- [Transition style]
+- [Background music direction]
+- Color scheme: [Specific colors matching the product/brand]
+
+Requirements:
+1. Format: Vertical (9:16) aspect ratio for mobile viewing.
+2. Avatar: Professional Indian male or female (based on brand tone), 30-38 years, smart casual attire. Confident and approachable.
+3. Background: Modern home studio or office, plants, soft warm lighting.
+4. Script Content & Tone:
+   - Address the Creator: Start with "Namaste ${creatorName}!" or "Hello ${creatorName}!"
+   - Acknowledge their specific product (${campaignData.product_name}) and their audience's real challenge
+   - Present the campaign as the solution MiCA has built FOR THEM
+   - Walk through the specific channel strategy as concrete tools working for them
+   - Include timecodes on all scene headings
+   - End with a motivating, personal closing line
+   - Style: Warm, encouraging — like a knowledgeable friend over chai
+5. Duration: 60-75 seconds total.
+6. Include ALL: scene timecodes, avatar direction, visual cues, and the full VISUAL NOTES section.
+
+Return the entire formatted text block — including the opening 'Create a...' line, TONE line, all SCRIPT scenes with timecodes and visual directions, and the VISUAL NOTES section. This is NOT just spoken words — it is the full director's brief.`;
+
+        const scriptJson = await callAIStructured<{ video_agent_prompt: string }>({
+            systemPrompt,
+            userPrompt,
+            temperature: 0.7,
+            maxTokens: 2000,
+            schemaName: "save_video_agent_prompt",
+            schemaDescription: "Save the full video agent director's brief.",
+            schema: {
+                type: "object",
+                required: ["video_agent_prompt"],
+                properties: {
+                    video_agent_prompt: { type: "string" }
+                }
+            }
+        });
 
         await supabase.from('campaigns').update({ video_script: scriptJson.video_agent_prompt }).eq('id', campaignData.id);
         return scriptJson.video_agent_prompt;
@@ -730,12 +901,14 @@ Rules:
 
     return (
         <Layout>
-            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4">
-
+            <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 pt-10">
+                <div className="mb-8 md:mb-12 w-full z-20 relative text-center">
+                    <MiCALogo variant="header" />
+                </div>
                 <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center p-4 bg-indigo-500/10 rounded-full mb-6 relative">
-                        <Sparkles className="w-12 h-12 text-indigo-400 animate-pulse" />
-                        <div className="absolute inset-0 border-4 border-indigo-500/20 rounded-full animate-spin-slow"></div>
+                    <div className="inline-flex items-center justify-center p-4 bg-[#FF7A00]/10 rounded-full mb-6 relative">
+                        <Sparkles className="w-12 h-12 text-[#FF7A00] animate-pulse" />
+                        <div className="absolute inset-0 border-4 border-[#FF7A00]/20 rounded-full animate-spin-slow"></div>
                     </div>
                     <h1 className="text-3xl font-bold mb-3">Creating Your Campaign</h1>
                     <p className="text-gray-400 max-w-lg mx-auto">
@@ -743,7 +916,7 @@ Rules:
                     </p>
                 </div>
 
-                <div className="w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div className="w-full max-w-md bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl p-8 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
                     <div className="space-y-6">
                         {STEPS.map((step, index) => {
                             const isCompleted = completedSteps.includes(step.id);
@@ -751,7 +924,7 @@ Rules:
                             // const isPending = !isCompleted && !isCurrent;
 
                             return (
-                                <div key={step.id} className="flex items-center gap-4 transition-all duration-500">
+                                <div key={step.id} ref={el => { stepRefs.current[index] = el; }} className="flex items-center gap-4 transition-all duration-500">
                                     <div className="flex-shrink-0">
                                         {isCompleted ? (
                                             <CheckCircle2 className="w-6 h-6 text-green-500 animate-in zoom-in" />
@@ -761,13 +934,13 @@ Rules:
                                             <Circle className="w-6 h-6 text-gray-700" />
                                         )}
                                     </div>
-                                    <div className={`text-sm font-medium flex-1 ${isCompleted ? 'text-gray-300' :
+                                    <div className={`text-base font-medium flex-1 ${isCompleted ? 'text-gray-400' :
                                         isCurrent ? 'text-white' :
                                             'text-gray-600'
                                         }`}>
                                         {step.label}
                                         {isCurrent && progressText && step.id === 'images' && (
-                                            <div className="text-xs text-indigo-400 mt-1">{progressText}</div>
+                                            <div className="text-sm text-[#FF7A00] mt-1">{progressText}</div>
                                         )}
                                     </div>
                                 </div>

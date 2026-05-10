@@ -1,5 +1,6 @@
 import React from 'react';
-import { Download, Play, Pause, RefreshCw } from 'lucide-react';
+import { Download, Play, Pause, RefreshCw, Copy, Check } from 'lucide-react';
+import { DEMO_MODE_ENABLED } from '../data/demoData';
 
 // Video Player Component
 interface VideoPlayerProps {
@@ -124,14 +125,17 @@ interface SocialPostCardProps {
     post: any;
     onGenerateImage?: (postId: string, prompt: string) => void;
     generatingImageId?: string | null;
+    onCopy?: (id: string, text: string) => void;
+    copiedId?: string | null;
 }
 
-export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerateImage, generatingImageId }) => {
+export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerateImage, generatingImageId, onCopy, copiedId }) => {
     const [imageError, setImageError] = React.useState(false);
     const [expanded, setExpanded] = React.useState(false);
+    const isDemo = DEMO_MODE_ENABLED();
 
     return (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-gray-700 transition-colors">
+        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 hover:border-pink-500/50 hover:shadow-[0_0_20px_rgba(236,72,153,0.15)] hover:-translate-y-1 transition-all duration-300 group/card">
             {/* Image Area */}
             <div className="aspect-square bg-gray-950 relative group">
                 {post.image_url && !imageError ? (
@@ -142,7 +146,7 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerate
                             className="w-full h-full object-cover"
                             onError={() => setImageError(true)}
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <div className={`absolute inset-0 ${isDemo ? '' : 'bg-black/60'} opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3`}>
                             <a
                                 href={post.image_url}
                                 target="_blank"
@@ -229,6 +233,16 @@ export const SocialPostCard: React.FC<SocialPostCardProps> = ({ post, onGenerate
                         <span key={i} className="text-[10px] text-blue-400">{tag}</span>
                     ))}
                 </div>
+                {onCopy && (
+                    <button
+                        onClick={() => onCopy(post.id, `${post.caption}\n\n${post.hashtags}`)}
+                        className={`mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            copiedId === post.id ? 'bg-green-500/20 text-green-400' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                        }`}
+                    >
+                        {copiedId === post.id ? <><Check className="w-3 h-3" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy Caption &amp; Hashtags</>}
+                    </button>
+                )}
             </div>
         </div>
     );

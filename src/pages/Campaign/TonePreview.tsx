@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Layout } from '../../components/Layout';
-import { callAI } from '../../services/aiService';
+import { callAIStructured } from '../../services/aiService';
 import { DEMO_MODE_ENABLED, DEMO_CAMPAIGN, DEMO_TONE_VARIANTS } from '../../data/demoData';
 
 interface Campaign {
@@ -19,7 +19,7 @@ interface Campaign {
     tone: string;
     tone_custom_words: string;
     tone_revision_used: boolean;
-    tone_preview_content: any; // API response JSON
+    tone_preview_content: TonePreviewData | null;
     product_document_url?: string; // We'd need to fetch content if this exists, skipping for now as per instructions
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any;
@@ -46,25 +46,15 @@ const TONE_PREVIEW_SYSTEM_PROMPT = `You are MiCA, an expert AI marketing strateg
 
 Your task is to generate a TONE PREVIEW — 3 short samples that show the user what their marketing campaign will feel and sound like. This is NOT the full campaign. This is a quick taste so the user can approve the tone before we invest in full generation.
 
-You must respond in valid JSON format only. No markdown, no preamble, no explanation outside the JSON.
-
-Response format:
-{
-  "tone_summary": "2-3 sentences describing the overall marketing tone and approach you'll take for this campaign",
-  "sample_email": {
-    "subject": "Email subject line (max 60 chars)",
-    "opening_paragraph": "First paragraph of the email (3-4 sentences, ~80 words)"
-  },
-  "sample_social_post": {
-    "caption": "Instagram caption (150-200 words, include 3-5 relevant hashtags at the end)",
-    "post_type": "carousel | single_image | reel_script"
-  },
-  "sample_whatsapp": {
-    "message": "WhatsApp message (60-100 words, conversational, include one emoji, include a clear CTA)"
-  },
-  "recommended_channels": ["email", "whatsapp", "instagram", "voice_agent", "video_ad"],
-  "channel_reasoning": "1-2 sentences explaining why these channels were chosen based on the product type and budget"
-}
+Field guidance:
+- tone_summary: 2-3 sentences describing the overall marketing tone and approach you'll take for this campaign
+- sample_email.subject: max 60 chars
+- sample_email.opening_paragraph: 3-4 sentences, ~80 words
+- sample_social_post.caption: Instagram caption (150-200 words, include 3-5 relevant hashtags at the end)
+- sample_social_post.post_type: one of carousel | single_image | reel_script
+- sample_whatsapp.message: 60-100 words, conversational, include one emoji, include a clear CTA
+- recommended_channels: subset of [email, whatsapp, instagram, voice_agent, video_ad]
+- channel_reasoning: 1-2 sentences explaining why these channels were chosen based on the product type and budget
 
 Rules:
 - Match the requested tone EXACTLY (Professional, Warm, Urgent, Casual, or Custom)
@@ -74,6 +64,15 @@ Rules:
 - Email should be professional but engaging
 - Social post should be scroll-stopping and visual-friendly
 - For recommended_channels: ALWAYS include "email" and "whatsapp". Only add "instagram" if budget >= ₹5000. Only add "voice_agent" if budget >= ₹15000. Only add "video_ad" if budget >= ₹25000.`;
+
+const CHANNEL_LABELS: Record<string, string> = {
+    email: 'Email Marketing',
+    whatsapp: 'WhatsApp',
+    instagram: 'Instagram',
+    video_ad: 'Video Ads',
+};
+
+const TONE_OPTIONS = ['Professional', 'Warm & Inspirational', 'Urgent', 'Casual', 'Custom'] as const;
 
 export const TonePreview: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -86,6 +85,7 @@ export const TonePreview: React.FC = () => {
     const [newTone, setNewTone] = useState('');
     const [customFeedback, setCustomFeedback] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [isApproveHovered, setIsApproveHovered] = useState(false);
 
     /* eslint-disable react-hooks/exhaustive-deps */
     useEffect(() => {
@@ -97,7 +97,7 @@ export const TonePreview: React.FC = () => {
         if (!id) return;
 
         if (DEMO_MODE_ENABLED()) {
-            setCampaign(DEMO_CAMPAIGN as any);
+            setCampaign({ ...DEMO_CAMPAIGN, tone_revision_used: false });
             setNewTone(DEMO_CAMPAIGN.tone);
             setCustomFeedback(DEMO_CAMPAIGN.tone_custom_words || '');
             setPreviewData(DEMO_CAMPAIGN.tone_preview_content);
@@ -183,27 +183,49 @@ Generate the tone preview samples now.`;
                 isRevision ? customFeedback : undefined
             );
 
-            // Call AI
-            const aiResponseString = await callAI({
+            // Call AI with structured output — guarantees valid JSON
+            const aiResponse = await callAIStructured<TonePreviewData>({
                 systemPrompt: TONE_PREVIEW_SYSTEM_PROMPT,
                 userPrompt: userPrompt,
-                temperature: 0.7
+                temperature: 0.7,
+                schemaName: "save_tone_preview",
+                schemaDescription: "Save the tone preview samples and channel recommendations.",
+                schema: {
+                    type: "object",
+                    required: ["tone_summary", "sample_email", "sample_social_post", "sample_whatsapp", "recommended_channels", "channel_reasoning"],
+                    properties: {
+                        tone_summary: { type: "string" },
+                        sample_email: {
+                            type: "object",
+                            required: ["subject", "opening_paragraph"],
+                            properties: {
+                                subject: { type: "string" },
+                                opening_paragraph: { type: "string" }
+                            }
+                        },
+                        sample_social_post: {
+                            type: "object",
+                            required: ["caption", "post_type"],
+                            properties: {
+                                caption: { type: "string" },
+                                post_type: { type: "string" }
+                            }
+                        },
+                        sample_whatsapp: {
+                            type: "object",
+                            required: ["message"],
+                            properties: {
+                                message: { type: "string" }
+                            }
+                        },
+                        recommended_channels: { type: "array", items: { type: "string" } },
+                        channel_reasoning: { type: "string" }
+                    }
+                }
             });
 
-            // Parse JSON
-            let aiResponse: TonePreviewData;
-            try {
-                // Handle potential markdown code blocks
-                const cleanJson = aiResponseString.replace(/```json\n?|\n?```/g, '').trim();
-                aiResponse = JSON.parse(cleanJson);
-            } catch (e) {
-                console.error("JSON Parse Error:", e);
-                console.log("Raw Response:", aiResponseString);
-                throw new Error("Failed to parse AI response. Please try again.");
-            }
-
             // Save to database
-            const updates: any = {
+            const updates: Partial<Campaign> & { tone_preview_content?: TonePreviewData; recommended_channels?: string[] } = {
                 tone_preview_content: aiResponse,
                 recommended_channels: aiResponse.recommended_channels
             };
@@ -226,9 +248,9 @@ Generate the tone preview samples now.`;
             setCampaign(prev => prev ? ({ ...prev, ...updates }) : null);
             setIsEditing(false);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Generation Error:", err);
-            setError(err.message || "Failed to generate preview");
+            setError(err instanceof Error ? err.message : "Failed to generate preview");
         } finally {
             setGenerating(false);
             setLoading(false);
@@ -269,8 +291,7 @@ Generate the tone preview samples now.`;
 
     const getBudgetUpgradeText = (channel: string) => {
         if (channel === 'instagram') return 'Budget < ₹5000';
-        if (channel === 'voice_agent') return 'Budget < ₹15000';
-        if (channel === 'video_ad') return 'Budget < ₹25000';
+        if (channel === 'video_ad') return 'Coming soon';
         return 'Not recommended';
     };
 
@@ -319,8 +340,8 @@ Generate the tone preview samples now.`;
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                            Tone Preview <span className="text-gray-500 text-lg font-normal">for {campaign.product_name}</span>
+                        <h1 className="text-3xl font-bold mb-2 flex items-center gap-2 flex-wrap">
+                            <span className="text-[#FF7A00]">Tone Preview</span> <span className="text-white text-lg font-normal">for {campaign.product_name}</span>
                         </h1>
                         <p className="text-gray-400">Review the AI's approach before we invest in full generation.</p>
                     </div>
@@ -341,7 +362,7 @@ Generate the tone preview samples now.`;
                 )}
 
                 {/* Tone Strategy Card */}
-                <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 rounded-xl p-6 mb-8 shadow-xl relative overflow-hidden">
+                <div className="bg-gray-900/40 backdrop-blur-sm border border-white/5 rounded-2xl p-6 mb-8 shadow-[0_4px_24px_rgba(0,0,0,0.4)] hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(99,102,241,0.25)] hover:border-indigo-400/60 hover:bg-gray-800/50 transition-all duration-500 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-10">
                         <Sparkles className="w-32 h-32 text-white" />
                     </div>
@@ -353,15 +374,8 @@ Generate the tone preview samples now.`;
                         <p className="text-gray-300 mb-6 max-w-4xl text-lg leading-relaxed">{previewData.tone_summary}</p>
 
                         <div className="flex flex-wrap gap-3">
-                            {['email', 'whatsapp', 'instagram', 'voice_agent', 'video_ad'].map(channel => {
+                            {['email', 'whatsapp', 'instagram', 'video_ad'].map(channel => {
                                 const supported = isChannelSupported(channel);
-                                const labels: Record<string, string> = {
-                                    email: 'Email Marketing',
-                                    whatsapp: 'WhatsApp',
-                                    instagram: 'Instagram',
-                                    voice_agent: 'Voice Agent',
-                                    video_ad: 'Video Ads'
-                                };
                                 return (
                                     <div
                                         key={channel}
@@ -372,7 +386,7 @@ Generate the tone preview samples now.`;
                                             }`}
                                     >
                                         {supported ? <Check className="w-3 h-3" /> : <div className="w-3 h-3 rounded-full bg-gray-600" />}
-                                        {labels[channel]}
+                                        {CHANNEL_LABELS[channel]}
                                         {!supported && <span className="text-xs ml-1 opacity-70">({getBudgetUpgradeText(channel)})</span>}
                                     </div>
                                 );
@@ -386,21 +400,21 @@ Generate the tone preview samples now.`;
                 <div className="grid md:grid-cols-3 gap-6 mb-10">
 
                     {/* Email Sample */}
-                    <div className="bg-white text-gray-900 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                        <div className="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
-                            <div className="flex items-center gap-2 text-gray-600 font-medium">
+                    <div className="bg-white/5 backdrop-blur-md text-white rounded-xl overflow-hidden border border-white/10 hover:bg-white/10 hover:border-amber-500/50 hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:-translate-y-1.5 transition-all duration-300">
+                        <div className="bg-white/5 px-4 py-4 border-b border-white/10 flex justify-between items-center">
+                            <div className="flex items-center gap-2 text-amber-300 font-medium">
                                 <Mail className="w-4 h-4" /> Email Preview
                             </div>
-                            <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">AI GENERATED</span>
+                            <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">AI GENERATED</span>
                         </div>
                         <div className="p-5">
-                            <div className="mb-4 pb-4 border-b border-gray-100">
-                                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide mb-1">Subject</p>
-                                <p className="text-sm font-bold text-gray-900 leading-snug">{previewData.sample_email.subject}</p>
+                            <div className="mb-4 pb-4 border-b border-white/10">
+                                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide mb-1">Subject</p>
+                                <p className="text-sm font-bold text-white leading-snug">{previewData.sample_email.subject}</p>
                             </div>
                             <div className="space-y-2">
-                                <p className="text-xs text-gray-500 font-semibold uppercase tracking-wide">Message Preview</p>
-                                <p className="text-sm text-gray-700 leading-relaxed font-serif">
+                                <p className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Message Preview</p>
+                                <p className="text-sm text-gray-300 leading-relaxed">
                                     {previewData.sample_email.opening_paragraph}...
                                 </p>
                             </div>
@@ -408,19 +422,19 @@ Generate the tone preview samples now.`;
                     </div>
 
                     {/* Social Sample */}
-                    <div className="bg-black text-white rounded-xl overflow-hidden shadow-lg border border-gray-800">
-                        <div className="bg-gray-900 p-4 border-b border-gray-800 flex justify-between items-center">
-                            <div className="flex items-center gap-2 text-gray-300 font-medium">
+                    <div className="bg-white/5 backdrop-blur-md text-white rounded-xl overflow-hidden border border-white/10 hover:bg-white/10 hover:border-pink-500/50 hover:shadow-[0_0_20px_rgba(236,72,153,0.2)] hover:-translate-y-1.5 transition-all duration-300">
+                        <div className="bg-white/5 px-4 py-4 border-b border-white/10 flex justify-between items-center">
+                            <div className="flex items-center gap-2 text-pink-300 font-medium">
                                 <Instagram className="w-4 h-4" /> Instagram
                             </div>
                             <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-bold">AI GENERATED</span>
                         </div>
                         <div className="p-5">
-                            <div className="aspect-square bg-gray-800 rounded-lg mb-4 flex items-center justify-center text-gray-500 text-xs text-center p-4 border border-gray-700 border-dashed">
+                            <div className="aspect-square bg-gradient-to-br from-pink-900/30 to-purple-900/30 rounded-lg mb-4 flex items-center justify-center text-gray-400 text-xs text-center p-4 border border-pink-500/20 border-dashed">
                                 <span className="opacity-70">Image / Video Placeholder<br />(Visuals generated in Session 3)</span>
                             </div>
                             <div className="mb-2">
-                                <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mr-2">{previewData.sample_social_post.post_type.replace('_', ' ')}</span>
+                                <span className="text-[10px] uppercase font-bold text-pink-400/70 tracking-wider mr-2">{previewData.sample_social_post.post_type.replace('_', ' ')}</span>
                             </div>
                             <p className="text-sm text-gray-300 leading-normal">
                                 {previewData.sample_social_post.caption}
@@ -429,14 +443,20 @@ Generate the tone preview samples now.`;
                     </div>
 
                     {/* WhatsApp Sample */}
-                    <div className="bg-[#E5DDD5] rounded-xl overflow-hidden shadow-lg border border-gray-300 relative">
+                    <div className="bg-[#E5DDD5] rounded-xl overflow-hidden shadow-lg border border-green-500/50 relative hover:-translate-y-1.5 hover:shadow-[0_15px_40px_rgba(37,211,102,0.2)] transition-all duration-300">
                         <div className="bg-[#075E54] p-4 flex justify-between items-center text-white shadow-sm z-10 relative">
                             <div className="flex items-center gap-2 font-medium">
                                 <MessageSquare className="w-4 h-4" /> WhatsApp
                             </div>
                             <span className="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-bold">AI GENERATED</span>
                         </div>
-                        <div className="p-5 h-[300px] overflow-y-auto bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat opacity-90">
+                        <div className="p-5" style={{
+                          backgroundColor: '#efeae2',
+                          backgroundImage: 'url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")',
+                          backgroundRepeat: 'repeat',
+                          backgroundSize: '260px',
+                          minHeight: 200,
+                        }}>
                             <div className="flex justify-end mb-4">
                                 <div className="bg-[#DCF8C6] text-gray-900 p-3 rounded-lg rounded-tr-none shadow-sm max-w-[85%] text-sm leading-snug relative">
                                     {previewData.sample_whatsapp.message}
@@ -449,7 +469,7 @@ Generate the tone preview samples now.`;
                 </div>
 
                 {/* Footer / Controls */}
-                <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 sticky bottom-4 shadow-2xl z-50">
+                <div className="bg-gray-900/60 backdrop-blur-md border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 sticky bottom-4 shadow-2xl z-50">
                     <div className="flex-1 w-full">
                         {!campaign.tone_revision_used ? (
                             !isEditing ? (
@@ -468,11 +488,7 @@ Generate the tone preview samples now.`;
                                             onChange={(e) => setNewTone(e.target.value)}
                                             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 text-white"
                                         >
-                                            <option>Professional</option>
-                                            <option>Warm & Inspirational</option>
-                                            <option>Urgent</option>
-                                            <option>Casual</option>
-                                            <option>Custom</option>
+                                            {TONE_OPTIONS.map(t => <option key={t}>{t}</option>)}
                                         </select>
                                     </div>
                                     <div className="flex-[2] w-full">
@@ -506,7 +522,15 @@ Generate the tone preview samples now.`;
                     <Button
                         size="lg"
                         onClick={handleApprove}
-                        className="w-full md:w-auto bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-900/40 text-white font-bold py-4 px-8"
+                        onMouseEnter={() => setIsApproveHovered(true)}
+                        onMouseLeave={() => setIsApproveHovered(false)}
+                        className="w-full md:w-auto text-white font-extrabold py-4 px-8 rounded-full border-none transition-all transform hover:scale-105"
+                        style={{
+                            backgroundColor: '#FF7A00',
+                            boxShadow: isApproveHovered
+                                ? '0 0 28px 8px rgba(255,122,0,0.9)'
+                                : '0 0 18px 4px rgba(255,122,0,0.4)',
+                        }}
                         rightIcon={<ArrowRight className="w-5 h-5" />}
                     >
                         Looks Great — Generate Full Campaign
