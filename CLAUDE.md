@@ -14,12 +14,18 @@ A React + Vite + TypeScript app. Marketing campaign generator: user describes th
 - **Backend:** Supabase (auth + Postgres) — note the configured project may be paused/dead; demo mode is the reliable path for now
 - **Branding:** orange (`#FF7A00`), dark theme, the "MiCA eyeball" character is the brand mascot
 
+## Two-repo arrangement (read this first)
+
+This repo is the **private/canonical** copy. The open-source release lives in a **separate sister repo** at:
+
+- GitHub: `https://github.com/RenegadeRocks/MiCA-OSS-Marketing-Automation-System`
+- Local clone: `/Users/josh/Documents/AI-Projects/MiCA-OSS/mica`
+
+The two codebases have **diverged** — the OSS sister has stricter TypeScript, a Settings UI for API keys (`lib/apiKeys.ts`), and a more advanced video service (`startVideo` / `checkVideoStatus` / `persistVideoToStorage`) with Dashboard polling for resumable HeyGen generation. This repo (MiCA-OG) uses raw `import.meta.env` for keys and a simpler blocking `generateVideo` call.
+
+**Rule:** When porting fixes between repos, do not assume cherry-pick or `git apply` will work — port manually, preserving each repo's conventions. The local `OSS_NOTES.md` in this repo is historical context only; the live OSS work happens in the sister repo.
+
 ## Active workstreams
-
-### Open-sourcing the project
-**Read `OSS_NOTES.md` at the repo root.** It captures the full state of the OSS prep work — license decision (MIT, tentative), secrets-history scan results, QA findings, the API-key Settings page sketch, and the pending checklist.
-
-Resume from the "What's pending" section at the top of that file.
 
 ### Demo mode
 Demo mode is the bypass path that lets the app work without a live Supabase backend or paid API keys. Toggle: bottom-left button, or `Ctrl+Shift+D`, or `localStorage.mica_demo_mode = 'true'`. Demo data lives in `src/data/demoData.ts`.
@@ -38,6 +44,7 @@ For OSS users, demo mode is the "try it without setup" path — keep it working.
 - Don't reinstate the `<AuthContext>` "render-only-when-not-loading" gate — it caused the public landing page to be blank when Supabase was unreachable. Fixed in commit `22a1313`. Public routes must render regardless of auth backend health.
 - Don't commit anything in `.env` — the `.gitignore` already covers it. (One past leak in commit `479ad0c` of an OpenRouter key, already rotated.)
 - Don't add the gstack `.gstack/` folder or the playwright MCP `.playwright-mcp/` folder to commits — they're tooling artifacts, already gitignored.
+- Don't push directly to `main` — Satbir's machine has a Bash hook that blocks it. Default workflow: feature branch → `git push origin <branch>` → `gh pr create` → merge in GitHub UI (with branch-protection bypass if needed for solo merges). Same rule applies on the OSS sister repo.
 
 ## File map (big picture)
 
